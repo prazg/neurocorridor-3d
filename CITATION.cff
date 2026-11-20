@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use NeuroCorridor-3D in teaching, workshops, or academic research, please cite it using the metadata in this file."
+type: software
+title: "NeuroCorridor-3D: Zero-Build Interactive 3D Stereotactic Neuroanatomy, Fiber Tractography & Surgical Corridor Planning Sandbox"
+version: "1.0.0"
+date-released: "2026-11-20"
+license: MIT
+repository-code: "https://github.com/neurocorridor-3d/neurocorridor-3d"
+url: "https://neurocorridor-3d.github.io/neurocorridor-3d/"
+authors:
+  - name: "NeuroCorridor-3D Contributors"
+abstract: >-
+  NeuroCorridor-3D is a zero-build, 100% browser-local static web application
+  for interactive 3D stereotactic neuroanatomy education and research in
+  MNI-152 RAS+ millimeter coordinates. It integrates 8 eloquent cortical,
+  deep-gray, cranial-nerve, and neurovascular regions (11 lateralized
+  structures), 6 white-matter fiber tract systems (10 Catmull-Rom spline
+  bundles with Anatomical and DTI DEC RGB visualization), 5 curated
+  neurosurgical teaching cases, analytical real-time corridor clearance
+  computation, deterministic trajectory optimization, synchronized radiological
+  tri-planar slices, a down-the-barrel Probe's-Eye view, client-side MNI-152
+  NIfTI-1 (.nii/.nii.gz) lesion mask overlay with zero uploads, and a
+  10-question interactive neuroanatomy quiz. Educational and research sandbox
+  only; not approved for clinical neuronavigation.
+keywords:
+  - neurosurgery
+  - neuroanatomy
+  - stereotaxy
+  - MNI-152
+  - fiber-tractography
+  - surgical-corridor-planning
+  - nifti
+  - medical-education
+  - open-science
+  - browser-local

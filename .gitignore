@@ -1,0 +1,47 @@
+# Python verification artifacts & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Local neuroimaging volumes & clinical data (prevent accidental PHI/mask commits)
+*.nii
+*.nii.gz
+*.dcm
+*.dicom
+*.mgh
+*.mgz
+*.nrrd
+*.trk
+*.tck
+
+# Exported educational session reports
+neurocorridor-report-*.md
+neurocorridor-report-*.json
+
+# Accidental bundler / package-manager artifacts (project is zero-build)
+node_modules/
+dist/
+build/
+_site/
+
+# OS & editor clutter
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs & local environment files
+*.log
+.env
+.env.local

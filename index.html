@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NeuroCorridor-3D — Zero-build, 100% browser-local stereotactic neuroanatomy, white-matter tractography, and neurosurgical corridor planning educational console.">
+  <title>NeuroCorridor-3D · Stereotactic Neurosurgical Planning Sandbox</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <div id="cors-error-banner" class="cors-banner" role="alert" hidden></div>
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="console-shell">
+    <!-- =================================================================== -->
+    <!-- TOP SURGICAL NEURONAVIGATION CONSOLE HEADER                         -->
+    <!-- =================================================================== -->
+    <header class="console-header">
+      <div class="header-primary">
+        <div class="brand-cluster">
+          <div class="brand-emblem" aria-hidden="true">
+            <svg viewBox="0 0 36 36" width="32" height="32" fill="none">
+              <rect x="1.5" y="1.5" width="33" height="33" rx="8" fill="#0b1322" stroke="#38bdf8" stroke-opacity="0.45" stroke-width="1.2"/>
+              <path d="M17.2 7.5C12.2 7.8 8.4 11.7 8.2 16.8C8.1 20.1 9.5 22.9 11.8 24.8C12.3 26.6 14.3 27.9 16.6 27.8V7.5H17.2Z" stroke="#7dd3fc" stroke-width="1.35" fill="#0ea5e9" fill-opacity="0.14"/>
+              <path d="M18.8 7.5C23.8 7.8 27.6 11.7 27.8 16.8C27.9 20.1 26.5 22.9 24.2 24.8C23.7 26.6 21.7 27.9 19.4 27.8V7.5H18.8Z" stroke="#7dd3fc" stroke-width="1.35" fill="#0ea5e9" fill-opacity="0.08"/>
+              <path d="M11.5 14.5C13.6 14.2 14.8 16.2 13.5 18.2C12.5 19.7 14.2 21.8 16 21.5" stroke="#38bdf8" stroke-width="1.15" stroke-linecap="round"/>
+              <path d="M24.5 14.5C22.4 14.2 21.2 16.2 22.5 18.2C23.5 19.7 21.8 21.8 20 21.5" stroke="#38bdf8" stroke-opacity="0.7" stroke-width="1.15" stroke-linecap="round"/>
+              <!-- Stereotactic corridor trajectory & target reticle -->
+              <line x1="29.5" y1="8.2" x2="21.5" y2="17.2" stroke="#10b981" stroke-width="2.1" stroke-linecap="round"/>
+              <circle cx="29.5" cy="8.2" r="2.1" fill="#0b1322" stroke="#10b981" stroke-width="1.3"/>
+              <circle cx="21.5" cy="17.2" r="3.1" stroke="#f43f5e" stroke-width="1.3" fill="#f43f5e" fill-opacity="0.28"/>
+            </svg>
+          </div>
+          <div class="brand-copy">
+            <div class="brand-title-row">
+              <h1 class="brand-title">NeuroCorridor-3D</h1>
+              <span class="coord-chip">MNI-152 RAS+</span>
+            </div>
+            <p class="brand-subtitle">Stereotactic White-Matter &amp; Surgical Approach Console</p>
+          </div>
+        </div>
+
+        <div class="safety-chrome" role="note" aria-label="Clinical safety and data privacy notices">
+          <span class="badge badge-disclaimer" title="For neurosurgical education and research simulation only">
+            <span class="badge-dot badge-dot-amber" aria-hidden="true"></span>
+            Educational & Research Sandbox — Not Approved for Clinical Neuronavigation
+          </span>
+          <span class="badge badge-privacy" title="All geometry, NIfTI mask parsing, and report exports run strictly in browser memory">
+            <span class="badge-dot badge-dot-emerald" aria-hidden="true"></span>
+            100% Browser-Local · Zero Uploads
+          </span>
+        </div>
+
+        <div class="header-actions">
+          <div class="mode-switcher" role="tablist" aria-label="Application mode">
+            <button id="mode-btn-sandbox" type="button" class="mode-btn is-active" role="tab" aria-selected="true" data-app-mode="sandbox">
+              Corridor Sandbox
+            </button>
+            <button id="mode-btn-quiz" type="button" class="mode-btn" role="tab" aria-selected="false" data-app-mode="quiz">
+              Guided Neuroanatomy Quiz
+              <span id="mode-quiz-score" class="mode-score-pill">0/10</span>
+            </button>
+          </div>
+
+          <div class="action-btn-group">
+            <button id="btn-export-json" type="button" class="btn btn-ghost" title="Download surgical corridor plan as JSON (100% browser-local)">
+              Export JSON
+            </button>
+            <button id="btn-export-md" type="button" class="btn btn-ghost" title="Download clinician-readable Markdown study summary (100% browser-local)">
+              Export Summary
+            </button>
+            <button id="btn-reset-case" type="button" class="btn btn-outline" title="Reset active case lesion, corridor, slices, and camera">
+              Reset Case
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Curated Teaching Cases Bar -->
+      <div class="header-cases">
+        <span class="cases-label">Teaching Cases</span>
+        <div id="case-selector-list" class="case-pill-strip" role="listbox" aria-label="Curated neurosurgical teaching cases">
+          <!-- Populated dynamically from data/cases.json -->
+        </div>
+        <label class="sr-only" for="case-selector-select">Select teaching case</label>
+        <select id="case-selector-select" class="case-select-compact" aria-label="Select teaching case">
+          <!-- Synced dynamically with case pills -->
+        </select>
+      </div>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- MAIN WORKSPACE: LEFT MULTI-VIEWPORT STAGE + RIGHT TELEMETRY PANEL   -->
+    <!-- =================================================================== -->
+    <main class="console-workspace">
+      <!-- LEFT / CENTER MULTI-VIEWPORT VISUALIZATION STAGE -->
+      <section class="viz-stage" aria-label="3D Stereotactic and Orthogonal Slice Viewports">
+        <!-- HERO 3D STEREOTACTIC VIEWPORT -->
+        <div class="viewport-hero-card">
+          <div class="canvas-stage-3d">
+            <canvas id="viewport-3d" aria-label="Interactive 3D stereotactic brain, white-matter tractography, and surgical corridor canvas"></canvas>
+
+            <!-- Top-Left Floating HUD Readout -->
+            <div class="hud-top-left">
+              <div class="hud-row">
+                <span id="hud-risk-badge" class="hud-risk-pill tier-safe">LOADING ATLAS…</span>
+                <span id="hud-case-title" class="hud-case-title">Initializing Stereotactic Engine</span>
+              </div>
+              <div id="hud-trajectory-stats" class="hud-stats-line">
+                LEN --.- mm · DEPTH --.- mm · Ø -- mm · MIN --.- mm
+              </div>
+            </div>
+
+            <!-- Top-Right Floating Display Controls -->
+            <div class="hud-top-right">
+              <div class="hud-control-cluster">
+                <div class="segmented-mini" role="group" aria-label="Tract coloring mode">
+                  <button id="btn-color-anatomical" type="button" class="seg-btn is-active" aria-pressed="true" title="Color fiber tracts by anatomical system">
+                    Anatomical
+                  </button>
+                  <button id="btn-color-dec" type="button" class="seg-btn" aria-pressed="false" title="Color fiber tracts using standard neuroradiological DTI DEC RGB (R=L-R, G=A-P, B=S-I)">
+                    DTI DEC RGB
+                  </button>
+                </div>
+
+                <div id="dec-legend" class="dec-legend" hidden aria-label="DTI directional color legend">
+                  <span class="dec-chip dec-r">R: L↔R</span>
+                  <span class="dec-chip dec-g">G: A↔P</span>
+                  <span class="dec-chip dec-b">B: S↔I</span>
+                </div>
+              </div>
+
+              <div class="hud-overlay-bar">
+                <label class="hud-slider-label" for="slider-brain-opacity" title="Adjust cortical brain shell opacity">
+                  <span>Brain</span>
+                  <input id="slider-brain-opacity" type="range" min="0.05" max="0.60" step="0.01" value="0.24">
+                  <span id="val-brain-opacity" class="mono-mini">24%</span>
+                </label>
+
+                <div class="hud-check-group">
+                  <label class="hud-check" title="Toggle cortical brain wireframe & glass shell">
+                    <input id="toggle-brain-shell" type="checkbox" checked>
+                    <span>Shell</span>
+                  </label>
+                  <label class="hud-check" title="Toggle 3D floating anatomical labels">
+                    <input id="toggle-labels" type="checkbox" checked>
+                    <span>Labels</span>
+                  </label>
+                  <label class="hud-check" title="Toggle peritumoral FLAIR edema halo">
+                    <input id="toggle-edema" type="checkbox" checked>
+                    <span>Edema</span>
+                  </label>
+                  <label class="hud-check" title="Toggle ventricles & brainstem landmarks">
+                    <input id="toggle-ventricles" type="checkbox" checked>
+                    <span>Vents</span>
+                  </label>
+                  <label class="hud-check" title="Toggle 3D surgical corridor cylinder">
+                    <input id="toggle-corridor" type="checkbox" checked>
+                    <span>Corridor</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom-Center Floating Camera Preset Bar -->
+            <div class="hud-bottom-center">
+              <div id="camera-presets" class="camera-preset-bar" role="group" aria-label="3D camera presets">
+                <button type="button" class="preset-btn is-active" data-preset="oblique" title="Default 3/4 oblique view">Oblique</button>
+                <button type="button" class="preset-btn" data-preset="superior" title="Superior vertex view">Superior</button>
+                <button type="button" class="preset-btn" data-preset="anterior" title="Anterior frontal view">Anterior</button>
+                <button type="button" class="preset-btn" data-preset="left" title="Left lateral hemispheric view">Left Lat</button>
+                <button type="button" class="preset-btn" data-preset="right" title="Right lateral hemispheric view">Right Lat</button>
+                <button type="button" class="preset-btn" data-preset="skull_base" title="Inferior-anterior skull base / endonasal view">Skull Base</button>
+                <button type="button" class="preset-btn preset-corridor" data-preset="corridor_view" title="Align camera along the active surgical corridor">Corridor</button>
+              </div>
+              <div class="hud-nav-hint">Drag: Orbit · Shift/Right-Drag: Pan · Scroll: Zoom · Dbl-Click: Reset</div>
+            </div>
+
+            <!-- Interactive Hover Tooltip -->
+            <div id="hover-tooltip" class="hover-tooltip" role="status" hidden></div>
+          </div>
+        </div>
+
+        <!-- BOTTOM 4-UP SYNCHRONIZED ORTHOGONAL MNI SLICES + PROBE'S-EYE -->
+        <div class="ortho-section">
+          <div class="ortho-toolbar">
+            <span class="ortho-toolbar-title">Synchronized MNI-152 Tri-Planar Slices &amp; Probe's-Eye View</span>
+            <div class="ortho-toolbar-right">
+              <span class="ortho-click-label">Slice Click:</span>
+              <div id="click-mode-group" class="segmented-mini" role="group" aria-label="Orthogonal slice click interaction mode">
+                <button type="button" class="seg-btn is-active" data-mode="inspect" aria-pressed="true" title="Click or drag slices to move synchronized MNI crosshair">Crosshair</button>
+                <button type="button" class="seg-btn" data-mode="target" aria-pressed="false" title="Click on any slice to place surgical target MNI point">Set Target</button>
+                <button type="button" class="seg-btn" data-mode="entry" aria-pressed="false" title="Click on any slice to place surgical entry MNI point (or Shift+Click)">Set Entry</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ortho-grid">
+            <!-- AXIAL Z -->
+            <div class="slice-card">
+              <div class="slice-canvas-wrap">
+                <canvas id="slice-axial" aria-label="Axial MNI-152 Z slice viewport"></canvas>
+              </div>
+              <div class="slice-scrubber">
+                <label class="scrubber-axis axis-z" for="slider-slice-z">Z</label>
+                <input id="slider-slice-z" type="range" min="-55" max="82" step="1" value="12" aria-label="Axial Z slice position in mm">
+                <span id="val-slice-z" class="scrubber-val">+12 mm</span>
+              </div>
+            </div>
+
+            <!-- CORONAL Y -->
+            <div class="slice-card">
+              <div class="slice-canvas-wrap">
+                <canvas id="slice-coronal" aria-label="Coronal MNI-152 Y slice viewport"></canvas>
+              </div>
+              <div class="slice-scrubber">
+                <label class="scrubber-axis axis-y" for="slider-slice-y">Y</label>
+                <input id="slider-slice-y" type="range" min="-105" max="72" step="1" value="-14" aria-label="Coronal Y slice position in mm">
+                <span id="val-slice-y" class="scrubber-val">-14 mm</span>
+              </div>
+            </div>
+
+            <!-- SAGITTAL X -->
+            <div class="slice-card">
+              <div class="slice-canvas-wrap">
+                <canvas id="slice-sagittal" aria-label="Sagittal MNI-152 X slice viewport"></canvas>
+              </div>
+              <div class="slice-scrubber">
+                <label class="scrubber-axis axis-x" for="slider-slice-x">X</label>
+                <input id="slider-slice-x" type="range" min="-72" max="72" step="1" value="0" aria-label="Sagittal X slice position in mm">
+                <span id="val-slice-x" class="scrubber-val">0 mm</span>
+              </div>
+            </div>
+
+            <!-- PROBE'S-EYE CROSS-SECTION -->
+            <div class="slice-card slice-card-probe">
+              <div class="slice-canvas-wrap">
+                <canvas id="viewport-probe" aria-label="Probe's-Eye cross-section along surgical corridor"></canvas>
+              </div>
+              <div class="slice-scrubber">
+                <label class="scrubber-axis axis-probe" for="slider-probe-depth">DEPTH</label>
+                <input id="slider-probe-depth" type="range" min="0" max="100" step="1" value="50" aria-label="Probe's-Eye depth percentage along corridor">
+                <span id="val-probe-depth" class="scrubber-val">50%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT INTERACTIVE CONTROL & RISK TELEMETRY PANEL -->
+      <aside class="control-console" aria-label="Corridor planning, atlas controls, case pearls, and quiz console">
+        <nav class="console-tabs" role="tablist" aria-label="Control panel sections">
+          <button id="tab-btn-planner" type="button" class="tab-btn is-active" role="tab" aria-selected="true" aria-controls="tab-panel-planner" data-tab="planner">
+            Corridor &amp; Risk
+          </button>
+          <button id="tab-btn-atlas" type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-panel-atlas" data-tab="atlas">
+            Atlas &amp; Lesion
+          </button>
+          <button id="tab-btn-pearls" type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-panel-pearls" data-tab="pearls">
+            Case Pearls
+          </button>
+          <button id="tab-btn-quiz" type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-panel-quiz" data-tab="quiz">
+            Quiz
+          </button>
+        </nav>
+
+        <!-- =============================================================== -->
+        <!-- TAB 1: CORRIDOR & RISK ANALYSIS                                 -->
+        <!-- =============================================================== -->
+        <section id="tab-panel-planner" class="tab-panel is-active" role="tabpanel" aria-labelledby="tab-btn-planner">
+          <!-- Overall Risk Banner + Telemetry KPIs -->
+          <div id="risk-status-banner" class="risk-banner tier-safe">
+            <div class="risk-banner-head">
+              <div class="risk-banner-status">
+                <span class="risk-pulse-dot" aria-hidden="true"></span>
+                <span id="risk-banner-label" class="risk-banner-title">SAFE MARGIN (&gt;10 mm)</span>
+              </div>
+              <span id="risk-banner-mode" class="risk-mode-tag">TRANSCORTICAL</span>
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi-cell">
+                <span class="kpi-label">Trajectory</span>
+                <span id="metric-traj-length" class="kpi-value">--.- mm</span>
+              </div>
+              <div class="kpi-cell">
+                <span class="kpi-label">Parenchyma</span>
+                <span id="metric-entry-depth" class="kpi-value">--.- mm</span>
+              </div>
+              <div class="kpi-cell">
+                <span class="kpi-label">Min Margin</span>
+                <span id="metric-min-clearance" class="kpi-value">--.- mm</span>
+              </div>
+              <div class="kpi-cell">
+                <span class="kpi-label">Hazards</span>
+                <span id="metric-hazard-counts" class="kpi-value">0C · 0W</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Corridor Radius & Approach Mode -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h2 class="panel-title">Surgical Corridor Parameters</h2>
+              <div id="approach-mode-group" class="segmented-mini" role="group" aria-label="Surgical approach mode">
+                <button type="button" class="seg-btn is-active" data-approach="transcortical" aria-pressed="true">Transcortical</button>
+                <button type="button" class="seg-btn" data-approach="endonasal" aria-pressed="false">Endonasal</button>
+              </div>
+            </div>
+
+            <div class="control-row-wide">
+              <div class="control-label-line">
+                <label for="slider-corridor-radius">Corridor Radius</label>
+                <span id="val-corridor-radius" class="mono-readout">6.0 mm (Ø 12 mm)</span>
+              </div>
+              <input id="slider-corridor-radius" type="range" min="3" max="12" step="0.5" value="6">
+            </div>
+
+            <!-- Entry Point MNI (X, Y, Z) -->
+            <div class="coord-block">
+              <div class="coord-block-header">
+                <span class="coord-block-title">Entry Point (MNI mm)</span>
+                <button id="btn-snap-entry" type="button" class="btn-micro" title="Project entry point radially onto the sculpted cortical surface">Snap to Cortex</button>
+              </div>
+              <div class="axis-slider-grid">
+                <label class="axis-tag axis-x" for="input-entry-x">X</label>
+                <input id="slider-entry-x" type="range" min="-72" max="72" step="0.5" value="40" aria-label="Entry MNI X slider">
+                <input id="input-entry-x" class="num-input" type="number" min="-72" max="72" step="0.5" value="40" aria-label="Entry MNI X mm">
+
+                <label class="axis-tag axis-y" for="input-entry-y">Y</label>
+                <input id="slider-entry-y" type="range" min="-105" max="72" step="0.5" value="26" aria-label="Entry MNI Y slider">
+                <input id="input-entry-y" class="num-input" type="number" min="-105" max="72" step="0.5" value="26" aria-label="Entry MNI Y mm">
+
+                <label class="axis-tag axis-z" for="input-entry-z">Z</label>
+                <input id="slider-entry-z" type="range" min="-55" max="82" step="0.5" value="56" aria-label="Entry MNI Z slider">
+                <input id="input-entry-z" class="num-input" type="number" min="-55" max="82" step="0.5" value="56" aria-label="Entry MNI Z mm">
+              </div>
+            </div>
+
+            <!-- Target Point MNI (X, Y, Z) -->
+            <div class="coord-block">
+              <div class="coord-block-header">
+                <span class="coord-block-title">Target Point (MNI mm)</span>
+                <button id="btn-center-target" type="button" class="btn-micro" title="Center target and slices on active lesion centroid">Center on Lesion</button>
+              </div>
+              <div class="axis-slider-grid">
+                <label class="axis-tag axis-x" for="input-target-x">X</label>
+                <input id="slider-target-x" type="range" min="-72" max="72" step="0.5" value="26" aria-label="Target MNI X slider">
+                <input id="input-target-x" class="num-input" type="number" min="-72" max="72" step="0.5" value="26" aria-label="Target MNI X mm">
+
+                <label class="axis-tag axis-y" for="input-target-y">Y</label>
+                <input id="slider-target-y" type="range" min="-105" max="72" step="0.5" value="8" aria-label="Target MNI Y slider">
+                <input id="input-target-y" class="num-input" type="number" min="-105" max="72" step="0.5" value="8" aria-label="Target MNI Y mm">
+
+                <label class="axis-tag axis-z" for="input-target-z">Z</label>
+                <input id="slider-target-z" type="range" min="-55" max="82" step="0.5" value="46" aria-label="Target MNI Z slider">
+                <input id="input-target-z" class="num-input" type="number" min="-55" max="82" step="0.5" value="46" aria-label="Target MNI Z mm">
+              </div>
+            </div>
+
+            <!-- Deterministic Optimizer Controls -->
+            <div class="optimizer-actions">
+              <button id="btn-optimize-corridor" type="button" class="btn btn-primary-glow">
+                Auto-Optimize Low-Risk Entry
+              </button>
+              <button id="btn-reset-corridor" type="button" class="btn btn-ghost">
+                Reset Corridor
+              </button>
+            </div>
+
+            <div id="optimizer-result-banner" class="optimizer-banner" hidden>
+              <div class="opt-banner-top">
+                <span class="opt-badge">OPTIMIZER PREVIEW (CYAN DASHED)</span>
+                <span id="opt-eval-count" class="mono-mini"></span>
+              </div>
+              <p id="opt-summary-text" class="opt-summary-text"></p>
+              <div id="opt-delta-pills" class="opt-delta-pills"></div>
+              <div class="opt-banner-btns">
+                <button id="btn-apply-optimized" type="button" class="btn btn-emerald-sm">Apply Optimized Entry</button>
+                <button id="btn-dismiss-optimized" type="button" class="btn btn-ghost-sm">Dismiss Preview</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Structure / Tract Surgical & DES Pearl Inspector Popover -->
+          <div id="anatomy-inspector-card" class="inspector-card" hidden aria-live="polite">
+            <!-- Populated dynamically on table row or chip click -->
+          </div>
+
+          <!-- Live Sorted Proximity & Risk Matrix -->
+          <div class="panel-card panel-card-table">
+            <div class="panel-card-header">
+              <h2 class="panel-title">Proximity &amp; Risk Matrix</h2>
+              <div id="hazard-filter-group" class="filter-pill-group" role="group" aria-label="Filter proximity table">
+                <button type="button" class="filter-pill is-active" data-filter="all">All</button>
+                <button type="button" class="filter-pill" data-filter="warnings">≤10 mm</button>
+                <button type="button" class="filter-pill" data-filter="tract">Tracts</button>
+                <button type="button" class="filter-pill" data-filter="structure">Cortex/Vasc</button>
+              </div>
+            </div>
+            <p class="table-hint">Click any tract or structure to highlight in 3D &amp; inspect DES / surgical pearls.</p>
+            <div class="hazard-table-wrap">
+              <table class="hazard-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Structure / Tract</th>
+                    <th scope="col" class="num-col">Corridor</th>
+                    <th scope="col" class="num-col">Lesion</th>
+                    <th scope="col" class="risk-col">Risk</th>
+                  </tr>
+                </thead>
+                <tbody id="hazard-matrix-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 2: ATLAS VISIBILITY & CUSTOM LESION / LOCAL NIFTI           -->
+        <!-- =============================================================== -->
+        <section id="tab-panel-atlas" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-atlas" hidden>
+          <!-- Quick Visibility Shortcuts -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h2 class="panel-title">Atlas Visibility Controls</h2>
+            </div>
+            <div class="atlas-shortcut-row">
+              <button id="btn-show-all-atlas" type="button" class="btn btn-ghost-sm">Show All</button>
+              <button id="btn-hazards-only" type="button" class="btn btn-amber-sm">Focus Hazards Only</button>
+              <button id="btn-case-hazards" type="button" class="btn btn-cyan-sm">Case Key Hazards</button>
+            </div>
+          </div>
+
+          <!-- 6 White-Matter Tract Systems -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h2 class="panel-title">White-Matter Fiber Tracts (6 Systems)</h2>
+              <span class="mono-mini">CST · AF · SLF · IFOF · OR · CC</span>
+            </div>
+            <div id="tract-toggle-list" class="atlas-toggle-list">
+              <!-- Populated dynamically from atlas_anatomy.json -->
+            </div>
+          </div>
+
+          <!-- Eloquent Cortex, Deep Gray, Cranial Nerves & Vessels -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h2 class="panel-title">Eloquent Cortex, Deep Gray &amp; Vessels</h2>
+              <span class="mono-mini">11 Volumes</span>
+            </div>
+            <div id="structure-toggle-list" class="atlas-toggle-list">
+              <!-- Populated dynamically from atlas_anatomy.json -->
+            </div>
+          </div>
+
+          <!-- Custom Lesion Ellipsoid Editor -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h2 class="panel-title">Custom Lesion Editor (MNI-152)</h2>
+              <span id="lesion-volume-badge" class="mono-badge">--.- cm³</span>
+            </div>
+
+            <div class="coord-block">
+              <span class="coord-block-title">Lesion Center (MNI mm)</span>
+              <div class="axis-slider-grid">
+                <label class="axis-tag axis-x" for="input-lesion-cx">X</label>
+                <input id="slider-lesion-cx" type="range" min="-64" max="64" step="1" value="26" aria-label="Lesion center X">
+                <input id="input-lesion-cx" class="num-input" type="number" min="-64" max="64" step="1" value="26" aria-label="Lesion center X mm">
+
+                <label class="axis-tag axis-y" for="input-lesion-cy">Y</label>
+                <input id="slider-lesion-cy" type="range" min="-95" max="64" step="1" value="8" aria-label="Lesion center Y">
+                <input id="input-lesion-cy" class="num-input" type="number" min="-95" max="64" step="1" value="8" aria-label="Lesion center Y mm">
+
+                <label class="axis-tag axis-z" for="input-lesion-cz">Z</label>
+                <input id="slider-lesion-cz" type="range" min="-48" max="74" step="1" value="46" aria-label="Lesion center Z">
+                <input id="input-lesion-cz" class="num-input" type="number" min="-48" max="74" step="1" value="46" aria-label="Lesion center Z mm">
+              </div>
+            </div>
+
+            <div class="coord-block">
+              <span class="coord-block-title">Semi-Axis Radii (mm)</span>
+              <div class="axis-slider-grid">
+                <label class="axis-tag" for="input-lesion-rx">Rx</label>
+                <input id="slider-lesion-rx" type="range" min="3" max="35" step="1" value="15" aria-label="Lesion X radius">
+                <input id="input-lesion-rx" class="num-input" type="number" min="3" max="35" step="1" value="15" aria-label="Lesion X radius mm">
+
+                <label class="axis-tag" for="input-lesion-ry">Ry</label>
+                <input id="slider-lesion-ry" type="range" min="3" max="35" step="1" value="16" aria-label="Lesion Y radius">
+                <input id="input-lesion-ry" class="num-input" type="number" min="3" max="35" step="1" value="16" aria-label="Lesion Y radius mm">
+
+                <label class="axis-tag" for="input-lesion-rz">Rz</label>
+                <input id="slider-lesion-rz" type="range" min="3" max="35" step="1" value="14" aria-label="Lesion Z radius">
+                <input id="input-lesion-rz" class="num-input" type="number" min="3" max="35" step="1" value="14" aria-label="Lesion Z radius mm">
+              </div>
+            </div>
+
+            <div class="lesion-editor-footer">
+              <button id="btn-reset-lesion" type="button" class="btn btn-ghost-sm">Restore Case Default Lesion</button>
+            </div>
+          </div>
+
+          <!-- Local MNI-152 NIfTI Mask Dropzone -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h2 class="panel-title">Local MNI-152 NIfTI-1 Lesion Mask</h2>
+              <span class="privacy-mini">Local RAM Only</span>
+            </div>
+            <div id="nifti-dropzone" class="nifti-dropzone" tabindex="0" role="button" aria-label="Drop or select a local MNI-152 NIfTI .nii or .nii.gz lesion mask">
+              <div class="dropzone-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 16V4"/>
+                  <path d="M7 9l5-5 5 5"/>
+                  <path d="M20 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/>
+                </svg>
+              </div>
+              <div class="dropzone-copy">
+                <strong>Drop <code>.nii</code> or <code>.nii.gz</code> MNI-152 Binary Mask</strong>
+                <span>or click to browse · Parsed strictly in browser memory (zero uploads)</span>
+              </div>
+              <input id="nifti-file-input" type="file" accept=".nii,.gz,.nii.gz" hidden>
+            </div>
+            <div id="nifti-status-card" class="nifti-status-card" hidden aria-live="polite"></div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 3: CASE BRIEF & SURGICAL PEARLS                             -->
+        <!-- =============================================================== -->
+        <section id="tab-panel-pearls" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-pearls" hidden>
+          <div id="pearls-content" class="pearls-content">
+            <!-- Populated dynamically for active teaching case -->
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 4: GUIDED NEUROANATOMY & APPROACH QUIZ                      -->
+        <!-- =============================================================== -->
+        <section id="tab-panel-quiz" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-quiz" hidden>
+          <div class="panel-card quiz-header-card">
+            <div class="quiz-header-top">
+              <div>
+                <h2 class="panel-title">Guided Neuroanatomy &amp; Approach Quiz</h2>
+                <p class="quiz-subtitle">Selecting a question flies the 3D camera &amp; spotlights target anatomy.</p>
+              </div>
+              <span id="quiz-score-badge" class="quiz-score-badge">0 / 10</span>
+            </div>
+
+            <div class="quiz-progress-track" aria-hidden="true">
+              <div id="quiz-progress-bar" class="quiz-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="quiz-meta-row">
+              <span id="quiz-progress-text" class="mono-mini">Question 1 of 10 · 0 answered</span>
+              <button id="btn-quiz-restart" type="button" class="btn-micro">Restart Quiz</button>
+            </div>
+
+            <div id="quiz-dots" class="quiz-dots" role="navigation" aria-label="Quiz question jump selector">
+              <!-- Q1..Q10 dots -->
+            </div>
+          </div>
+
+          <div id="quiz-question-card" class="panel-card quiz-question-card">
+            <!-- Populated dynamically by NeuroQuizEngine -->
+          </div>
+
+          <div class="quiz-nav-footer">
+            <button id="btn-quiz-prev" type="button" class="btn btn-ghost">← Previous</button>
+            <button id="btn-quiz-next" type="button" class="btn btn-primary-glow">Next Question →</button>
+          </div>
+
+          <div id="quiz-summary-card" class="panel-card quiz-summary-card" hidden>
+            <!-- Populated on quiz completion -->
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

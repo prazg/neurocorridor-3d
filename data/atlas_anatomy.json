@@ -1,0 +1,872 @@
+{
+  "schemaVersion": "1.0.0",
+  "coordinateSystem": "MNI-152-RAS+",
+  "units": "mm",
+  "bounds": {
+    "x": [-72, 72],
+    "y": [-105, 72],
+    "z": [-55, 82]
+  },
+  "brainReference": {
+    "originMni": [0, 0, 0],
+    "centerMni": [0, -16, 12],
+    "radiiMm": [68, 86, 66],
+    "brainstemEllipsoids": [
+      {
+        "label": "Midbrain",
+        "center": [0, -24, -8],
+        "radii": [11, 9, 9]
+      },
+      {
+        "label": "Pons",
+        "center": [0, -26, -24],
+        "radii": [14, 12, 11]
+      },
+      {
+        "label": "Medulla",
+        "center": [0, -30, -44],
+        "radii": [8, 8, 12]
+      }
+    ],
+    "ventricles": [
+      {
+        "id": "lat_vent_left",
+        "hemisphere": "left",
+        "ellipsoids": [
+          {
+            "label": "Left Frontal Horn",
+            "center": [-10, 14, 10],
+            "radii": [5, 11, 6]
+          },
+          {
+            "label": "Left Ventricular Body",
+            "center": [-11, -10, 18],
+            "radii": [5, 16, 5]
+          },
+          {
+            "label": "Left Atrium (Trigone)",
+            "center": [-20, -38, 12],
+            "radii": [6, 9, 8]
+          },
+          {
+            "label": "Left Occipital Horn",
+            "center": [-16, -56, 8],
+            "radii": [4, 11, 5]
+          },
+          {
+            "label": "Left Temporal Horn",
+            "center": [-28, -22, -12],
+            "radii": [4, 12, 4]
+          }
+        ]
+      },
+      {
+        "id": "lat_vent_right",
+        "hemisphere": "right",
+        "ellipsoids": [
+          {
+            "label": "Right Frontal Horn",
+            "center": [10, 14, 10],
+            "radii": [5, 11, 6]
+          },
+          {
+            "label": "Right Ventricular Body",
+            "center": [11, -10, 18],
+            "radii": [5, 16, 5]
+          },
+          {
+            "label": "Right Atrium (Trigone)",
+            "center": [20, -38, 12],
+            "radii": [6, 9, 8]
+          },
+          {
+            "label": "Right Occipital Horn",
+            "center": [16, -56, 8],
+            "radii": [4, 11, 5]
+          },
+          {
+            "label": "Right Temporal Horn",
+            "center": [28, -22, -12],
+            "radii": [4, 12, 4]
+          }
+        ]
+      },
+      {
+        "id": "third_vent",
+        "hemisphere": "midline",
+        "ellipsoids": [
+          {
+            "label": "Third Ventricle",
+            "center": [0, -14, 2],
+            "radii": [2.5, 11, 6]
+          }
+        ]
+      }
+    ]
+  },
+  "structures": [
+    {
+      "id": "m1_left",
+      "name": "Primary Motor Cortex (Left)",
+      "shortName": "M1-L",
+      "hemisphere": "left",
+      "category": "eloquent_cortex",
+      "color": "#ef4444",
+      "ellipsoids": [
+        {
+          "label": "Left M1 Leg (Paracentral Lobule)",
+          "center": [-10, -26, 66],
+          "radii": [8, 9, 10]
+        },
+        {
+          "label": "Left M1 Hand Knob (Omega)",
+          "center": [-36, -20, 54],
+          "radii": [11, 9, 12]
+        },
+        {
+          "label": "Left M1 Face & Opercular Motor",
+          "center": [-52, -10, 34],
+          "radii": [9, 8, 11]
+        }
+      ],
+      "function": "Executes voluntary contralateral motor control via somatotopically organized Betz pyramidal neurons along the left precentral gyrus (medial paracentral leg, middle omega hand knob, inferolateral face).",
+      "deficitIfInjured": "Contralateral (right) spastic hemiparesis or focal monoparesis matching the somatotopic segment (crural foot drop medially, hand dexterity loss at the omega knob, central facial palsy laterally).",
+      "monitoringModality": "Median/tibial SSEP phase reversal to localize the central sulcus + high-frequency anodal direct cortical stimulation (train-of-five) and continuous transcranial/strip MEPs.",
+      "surgicalPearl": "Identify the precentral 'hand knob' (inverted omega sign) on axial MRI at the posterior end of the superior frontal sulcus, and preserve the Rolandic arterial/venous pial vasculature supplying the precentral bank."
+    },
+    {
+      "id": "m1_right",
+      "name": "Primary Motor Cortex (Right)",
+      "shortName": "M1-R",
+      "hemisphere": "right",
+      "category": "eloquent_cortex",
+      "color": "#f87171",
+      "ellipsoids": [
+        {
+          "label": "Right M1 Leg (Paracentral Lobule)",
+          "center": [10, -26, 66],
+          "radii": [8, 9, 10]
+        },
+        {
+          "label": "Right M1 Hand Knob (Omega)",
+          "center": [36, -20, 54],
+          "radii": [11, 9, 12]
+        },
+        {
+          "label": "Right M1 Face & Opercular Motor",
+          "center": [52, -10, 34],
+          "radii": [9, 8, 11]
+        }
+      ],
+      "function": "Executes voluntary contralateral (left-sided) motor output from the right precentral gyrus, organized somatotopically from medial paracentral leg to convexity hand knob and opercular face.",
+      "deficitIfInjured": "Contralateral (left) hemiparesis or focal monoparesis with loss of fine fractionated distal movements and hyperreflexia.",
+      "monitoringModality": "SSEP phase reversal across the central sulcus + cortical strip continuous MEPs and high-frequency train-of-five direct cortical motor mapping.",
+      "surgicalPearl": "In right frontal tumors approaching the precentral sulcus, place a subdural strip directly over the mapped M1 hand/leg cortex for continuous low-threshold MEP surveillance throughout resection."
+    },
+    {
+      "id": "broca_left",
+      "name": "Broca's Area (Left IFG)",
+      "shortName": "Broca-L",
+      "hemisphere": "left",
+      "category": "eloquent_cortex",
+      "color": "#f97316",
+      "ellipsoids": [
+        {
+          "label": "Left Pars Opercularis (BA 44)",
+          "center": [-50, 14, 16],
+          "radii": [9, 10, 10]
+        },
+        {
+          "label": "Left Pars Triangularis (BA 45)",
+          "center": [-48, 28, 10],
+          "radii": [9, 10, 9]
+        }
+      ],
+      "function": "Dominant left inferior frontal gyrus (pars opercularis and pars triangularis) orchestrating expressive speech production, syntactic assembly, and articulatory motor programming in concert with ventral premotor cortex.",
+      "deficitIfInjured": "Expressive (non-fluent/Broca's) aphasia, speech arrest, apraxia of speech, and agrammatism with relatively preserved auditory comprehension.",
+      "monitoringModality": "Awake craniotomy with bipolar direct electrical stimulation (60 Hz Ojemann probe, 1-4 mA) during continuous counting, picture naming (DO80), and verb generation plus ECoG after-discharge monitoring.",
+      "surgicalPearl": "Anatomical landmarks of Broca's area show substantial inter-individual variability and tumor-induced plasticity; always confirm true speech arrest sites with awake bipolar DES and respect a >=5-10 mm margin around positive tags."
+    },
+    {
+      "id": "wernicke_left",
+      "name": "Wernicke's Area (Left pSTG)",
+      "shortName": "Wern-L",
+      "hemisphere": "left",
+      "category": "eloquent_cortex",
+      "color": "#eab308",
+      "ellipsoids": [
+        {
+          "label": "Left Posterior Superior Temporal Gyrus (BA 22)",
+          "center": [-56, -42, 14],
+          "radii": [9, 13, 10]
+        },
+        {
+          "label": "Left Supramarginal / Angular Transition (BA 39/40)",
+          "center": [-52, -52, 24],
+          "radii": [9, 10, 9]
+        }
+      ],
+      "function": "Dominant posterior superior temporal gyrus and adjacent temporoparietal junction mediating phonological decoding, auditory language comprehension, and lexical-semantic retrieval.",
+      "deficitIfInjured": "Receptive (fluent/Wernicke's) aphasia with impaired comprehension, neologisms, severe paraphasias, and impaired repetition/reading (alexia/agraphia if angular cortex involved).",
+      "monitoringModality": "Awake craniotomy with bipolar cortical/subcortical DES during picture naming, auditory comprehension, repetition, and reading tasks.",
+      "surgicalPearl": "Posterior perisylvian language cortex frequently extends broadly across pSTG, pMTG, and supramarginal gyrus; favor a transcortical entry through an electrophysiologically silent sulcus posterior or inferior to mapped positive sites."
+    },
+    {
+      "id": "v1_bilateral",
+      "name": "Primary Visual Cortex (Calcarine V1)",
+      "shortName": "V1",
+      "hemisphere": "bilateral",
+      "category": "eloquent_cortex",
+      "color": "#22c55e",
+      "ellipsoids": [
+        {
+          "label": "Left Calcarine Cortex (BA 17)",
+          "center": [-10, -84, 4],
+          "radii": [8, 14, 10]
+        },
+        {
+          "label": "Right Calcarine Cortex (BA 17)",
+          "center": [10, -84, 4],
+          "radii": [8, 14, 10]
+        }
+      ],
+      "function": "Striate cortex flanking the superior (cuneus) and inferior (lingual gyrus) banks of the calcarine fissure performing retinotopic primary visual processing (macula posteriorly at occipital pole).",
+      "deficitIfInjured": "Contralateral homonymous hemianopsia (often with macular sparing if pole/PCA collaterals remain intact) or contralateral quadrantanopsia if isolated to one bank; cortical blindness if bilateral.",
+      "monitoringModality": "Flash/pattern Visual Evoked Potentials (VEP) with ERG confirmation under TIVA, or awake quadrant visual field testing with DES (phosphenes/transient scotomas).",
+      "surgicalPearl": "In occipital or medial parieto-occipital approaches, protect the calcarine branch of the posterior cerebral artery and avoid excessive lateral retraction against the occipital pole during interhemispheric approaches."
+    },
+    {
+      "id": "sma_left",
+      "name": "Supplementary Motor Area (Left)",
+      "shortName": "SMA-L",
+      "hemisphere": "left",
+      "category": "eloquent_cortex",
+      "color": "#fb923c",
+      "ellipsoids": [
+        {
+          "label": "Left Medial Superior Frontal Gyrus (SMA Proper)",
+          "center": [-8, -2, 62],
+          "radii": [7, 15, 9]
+        }
+      ],
+      "function": "Medial superior frontal gyrus immediately anterior to left M1 paracentral lobule mediating initiation of volitional movement, bimanual coordination, and dominant-hemisphere speech initiation (via the frontal aslant tract).",
+      "deficitIfInjured": "Transient SMA syndrome characterized by contralateral (right) akinesia/hemiparesis and mutism/transcortical motor aphasia that typically recovers over weeks to months via contralateral hemispheric recruitment.",
+      "monitoringModality": "Continuous transcranial/cortical MEPs (to verify intact M1/CST behind SMA) and awake initiation/bimanual/fluency testing for dominant-side tumors.",
+      "surgicalPearl": "Counsel patients preoperatively that temporary postoperative mutism and right-sided weakness after dominant SMA resection are expected and reversible provided M1 and the descending CST remain preserved."
+    },
+    {
+      "id": "sma_right",
+      "name": "Supplementary Motor Area (Right)",
+      "shortName": "SMA-R",
+      "hemisphere": "right",
+      "category": "eloquent_cortex",
+      "color": "#fdba74",
+      "ellipsoids": [
+        {
+          "label": "Right Medial Superior Frontal Gyrus (SMA Proper)",
+          "center": [8, -2, 62],
+          "radii": [7, 15, 9]
+        }
+      ],
+      "function": "Medial superior frontal gyrus immediately anterior to right M1 coordinating self-initiated contralateral motor sequences, postural stabilization, and bimanual synchronization.",
+      "deficitIfInjured": "Transient contralateral (left) hemiparesis/akinesia and reduced spontaneous motor initiation (SMA syndrome), typically resolving over 2-12 weeks when M1 and CST are spared.",
+      "monitoringModality": "Continuous MEP/SSEP neuromonitoring with subcortical monopolar motor mapping along the posterior resection plane.",
+      "surgicalPearl": "The posterior functional limit of a right superior frontal resection is M1/CST, not SMA itself; stable continuous MEPs reassure the surgeon that immediate postoperative left weakness reflects reversible SMA syndrome rather than permanent CST injury."
+    },
+    {
+      "id": "thalamus_bilateral",
+      "name": "Thalamus (Bilateral)",
+      "shortName": "Thal",
+      "hemisphere": "bilateral",
+      "category": "deep_gray",
+      "color": "#a855f7",
+      "ellipsoids": [
+        {
+          "label": "Left Thalamus",
+          "center": [-12, -18, 6],
+          "radii": [9, 14, 10]
+        },
+        {
+          "label": "Right Thalamus",
+          "center": [12, -18, 6],
+          "radii": [9, 14, 10]
+        }
+      ],
+      "function": "Central diencephalic relay hub routing somatosensory (VPL/VPM), visual (LGN), auditory (MGN), motor-cerebellar (VL/VA), and arousal/limbic signals to cerebral cortex.",
+      "deficitIfInjured": "Contralateral hemianesthesia, Dejerine-Roussy central thalamic pain syndrome, sensory ataxia, thalamic aphasia (dominant pulvinar/VL), or impaired consciousness if bilateral/paramedian.",
+      "monitoringModality": "Continuous median/tibial SSEPs, MEPs (monitoring adjacent PLIC), and stereotactic DTI/tractography navigation.",
+      "surgicalPearl": "Respect the thalamostriate and internal cerebral veins along the superior/medial thalamic surface; deep venous thrombosis causes devastating hemorrhagic thalamic infarction."
+    },
+    {
+      "id": "optic_chiasm",
+      "name": "Optic Chiasm & Optic Nerves",
+      "shortName": "Chiasm",
+      "hemisphere": "midline",
+      "category": "cranial_nerve",
+      "color": "#fde047",
+      "ellipsoids": [
+        {
+          "label": "Optic Chiasm",
+          "center": [0, 3, -14],
+          "radii": [7, 4, 3]
+        },
+        {
+          "label": "Left Intracranial Optic Nerve (CN II)",
+          "center": [-6, 12, -16],
+          "radii": [2.5, 8, 2.5]
+        },
+        {
+          "label": "Right Intracranial Optic Nerve (CN II)",
+          "center": [6, 12, -16],
+          "radii": [2.5, 8, 2.5]
+        }
+      ],
+      "function": "Pre-chiasmatic optic nerves (CN II) and central optic chiasm where nasal retinal fibers decussate to contralateral optic tracts while temporal retinal fibers remain ipsilateral.",
+      "deficitIfInjured": "Bitemporal hemianopsia from central chiasmal compression/ischemia, ipsilateral monocular blindness from optic nerve injury, or junctional scotoma at the anterior chiasmal knee.",
+      "monitoringModality": "Intraoperative flash Visual Evoked Potentials (VEP) with simultaneous electroretinography (ERG) under TIVA.",
+      "surgicalPearl": "Decompress sellar tumors inferiorly and centrally first so the thinned diaphragma sellae and optic chiasm descend naturally; preserve tiny superior hypophyseal artery branches supplying the inferior chiasm."
+    },
+    {
+      "id": "ica_bilateral",
+      "name": "Internal Carotid Arteries (Cavernous/Supraclinoid)",
+      "shortName": "ICA",
+      "hemisphere": "bilateral",
+      "category": "vascular",
+      "color": "#e11d48",
+      "ellipsoids": [
+        {
+          "label": "Left Cavernous/Paraclival ICA",
+          "center": [-11, -3, -24],
+          "radii": [3, 7.5, 5.5]
+        },
+        {
+          "label": "Left Supraclinoid ICA",
+          "center": [-10, 1, -15],
+          "radii": [2.8, 4.5, 4.5]
+        },
+        {
+          "label": "Right Cavernous/Paraclival ICA",
+          "center": [11, -3, -24],
+          "radii": [3, 7.5, 5.5]
+        },
+        {
+          "label": "Right Supraclinoid ICA",
+          "center": [10, 1, -15],
+          "radii": [2.8, 4.5, 4.5]
+        }
+      ],
+      "function": "Major paired anterior cerebral arterial trunks coursing through the cavernous sinus on either side of the sella turcica before piercing the distal dural ring to supply the ophthalmic, MCA, and ACA territories.",
+      "deficitIfInjured": "Life-threatening arterial hemorrhage, cavernous pseudoaneurysm or carotid-cavernous fistula, and massive hemispheric ischemic stroke or death.",
+      "monitoringModality": "Intraoperative microvascular Doppler ultrasonography (mandatory prior to sellar/cavernous dural incision), stereotactic neuronavigation, and continuous bilateral SSEP/MEP surveillance.",
+      "surgicalPearl": "Always identify the bony carotid prominences and medial optico-carotid recesses endoscopically and sweep with microvascular Doppler before every lateral dural or tumor margin maneuver—never rely on neuronavigation alone."
+    },
+    {
+      "id": "sss_midline",
+      "name": "Superior Sagittal Sinus",
+      "shortName": "SSS",
+      "hemisphere": "midline",
+      "category": "vascular",
+      "color": "#3b82f6",
+      "ellipsoids": [
+        {
+          "label": "Anterior-Third SSS",
+          "center": [0, 34, 58],
+          "radii": [4.5, 22, 5.5]
+        },
+        {
+          "label": "Middle-Third SSS (Rolandic Segment)",
+          "center": [0, -14, 73],
+          "radii": [5.5, 28, 6]
+        },
+        {
+          "label": "Posterior-Third SSS",
+          "center": [0, -64, 54],
+          "radii": [6, 26, 7]
+        }
+      ],
+      "function": "Principal midline dural venous sinus running inside the superior attachment of the falx cerebri from crista galli to torcula, draining bilateral convexity cortical bridging veins and arachnoid granulations.",
+      "deficitIfInjured": "Catastrophic venous hemorrhage, venous air embolism, and severe bilateral venous infarction/hemorrhagic edema if occluded posterior to the coronal suture.",
+      "monitoringModality": "Preoperative MRV/CTV sinus patency mapping, intraoperative microvascular Doppler over the sinus lumen, precordial Doppler/end-tidal CO2 monitoring for venous air embolism.",
+      "surgicalPearl": "Never ligate a patent middle- or posterior-third SSS; elevate bone flaps across the midline using multiple parasagittal burr holes under direct vision and preserve major Rolandic bridging veins."
+    }
+  ],
+  "tracts": [
+    {
+      "id": "cst_left",
+      "name": "Left Corticospinal Tract",
+      "shortName": "CST-L",
+      "system": "projection",
+      "hemisphere": "left",
+      "color": "#38bdf8",
+      "controlPolylines": [
+        [
+          [-11, -26, 65],
+          [-15, -23, 48],
+          [-20, -20, 28],
+          [-23, -17, 7],
+          [-14, -21, -14],
+          [-8, -24, -32],
+          [-4, -29, -46]
+        ],
+        [
+          [-24, -23, 62],
+          [-26, -21, 45],
+          [-24, -18, 26],
+          [-22, -15, 7],
+          [-13, -20, -14],
+          [-7, -23, -32],
+          [-4, -28, -46]
+        ],
+        [
+          [-36, -19, 55],
+          [-33, -18, 39],
+          [-27, -16, 23],
+          [-21, -14, 6],
+          [-12, -19, -15],
+          [-7, -22, -33],
+          [-3.5, -28, -47]
+        ],
+        [
+          [-46, -13, 40],
+          [-38, -14, 28],
+          [-29, -13, 17],
+          [-20, -12, 5],
+          [-11, -18, -15],
+          [-6, -21, -33],
+          [-3.5, -27, -45]
+        ]
+      ],
+      "function": "Primary descending motor projection pathway from left precentral gyrus (M1) through corona radiata, posterior limb of internal capsule (PLIC), cerebral peduncle, basis pontis, and medullary pyramid.",
+      "deficitIfInjured": "Permanent contralateral (right) spastic hemiplegia or severe monoparesis with loss of fine motor control.",
+      "desSign": "Monopolar cathodal train-of-five stimulation elicits time-locked contralateral EMG motor evoked potentials (MEPs) and focal muscle contraction following the ~1 mA per 1 mm proximity rule.",
+      "surgicalPearl": "Subcortical high-frequency monopolar mapping with a stop threshold around 3-5 mA (plus continuous strip MEPs) is the gold standard to preserve the left CST along deep insular and parasagittal tumor margins."
+    },
+    {
+      "id": "cst_right",
+      "name": "Right Corticospinal Tract",
+      "shortName": "CST-R",
+      "system": "projection",
+      "hemisphere": "right",
+      "color": "#0ea5e9",
+      "controlPolylines": [
+        [
+          [11, -26, 65],
+          [15, -23, 48],
+          [20, -20, 28],
+          [23, -17, 7],
+          [14, -21, -14],
+          [8, -24, -32],
+          [4, -29, -46]
+        ],
+        [
+          [24, -23, 62],
+          [26, -21, 45],
+          [24, -18, 26],
+          [22, -15, 7],
+          [13, -20, -14],
+          [7, -23, -32],
+          [4, -28, -46]
+        ],
+        [
+          [36, -19, 55],
+          [33, -18, 39],
+          [27, -16, 23],
+          [21, -14, 6],
+          [12, -19, -15],
+          [7, -22, -33],
+          [3.5, -28, -47]
+        ],
+        [
+          [46, -13, 40],
+          [38, -14, 28],
+          [29, -13, 17],
+          [20, -12, 5],
+          [11, -18, -15],
+          [6, -21, -33],
+          [3.5, -27, -45]
+        ]
+      ],
+      "function": "Primary descending motor projection tract from right precentral gyrus through corona radiata, right PLIC, cerebral peduncle, and ventral pons governing voluntary left-sided movement.",
+      "deficitIfInjured": "Permanent contralateral (left) spastic hemiplegia or severe upper/lower limb paresis.",
+      "desSign": "High-frequency monopolar subcortical stimulation evokes reproducible left-sided MEPs (face, hand, or leg depending on somatotopic fiber convergence) at thresholds scaling ~1 mA/mm.",
+      "surgicalPearl": "In right frontal gliomas, track the anterior border of the descending corona radiata continuously using a suction-monopolar probe to maximize extent of resection while stopping safely at 3-5 mA."
+    },
+    {
+      "id": "af_left",
+      "name": "Left Arcuate Fasciculus",
+      "shortName": "AF-L",
+      "system": "association",
+      "hemisphere": "left",
+      "color": "#f59e0b",
+      "controlPolylines": [
+        [
+          [-46, 16, 16],
+          [-41, 2, 24],
+          [-39, -16, 27],
+          [-41, -33, 24],
+          [-45, -42, 14],
+          [-51, -39, 6]
+        ],
+        [
+          [-48, 18, 14],
+          [-43, 0, 27],
+          [-41, -20, 31],
+          [-43, -36, 26],
+          [-48, -45, 14],
+          [-54, -41, 4]
+        ],
+        [
+          [-50, 14, 19],
+          [-45, -4, 31],
+          [-43, -24, 34],
+          [-46, -40, 27],
+          [-50, -48, 13],
+          [-56, -42, -2]
+        ],
+        [
+          [-47, 23, 12],
+          [-42, 6, 22],
+          [-40, -14, 29],
+          [-42, -31, 28],
+          [-47, -43, 17],
+          [-53, -44, 8]
+        ]
+      ],
+      "function": "Dominant dorsal perisylvian language association bundle arching around the superior-posterior margin of the left insula to connect posterior STG/MTG (Wernicke) with IFG/ventral premotor cortex (Broca).",
+      "deficitIfInjured": "Conduction aphasia with prominent phonemic paraphasias, severely impaired verbatim repetition, and persistent phonological working-memory deficits.",
+      "desSign": "Awake bipolar subcortical stimulation induces reproducible phonemic paraphasias (sound substitutions/transpositions) and repetition arrest.",
+      "surgicalPearl": "The left arcuate fasciculus forms the superoposterior functional roof of insular tumors and the lateral-superior boundary of left TPO lesions; stop subcortical resection immediately upon eliciting reproducible phonemic errors."
+    },
+    {
+      "id": "slf_left",
+      "name": "Left Superior Longitudinal Fasciculus",
+      "shortName": "SLF-L",
+      "system": "association",
+      "hemisphere": "left",
+      "color": "#fbbf24",
+      "controlPolylines": [
+        [
+          [-34, 28, 32],
+          [-35, 8, 38],
+          [-36, -16, 39],
+          [-38, -36, 38],
+          [-40, -52, 36]
+        ],
+        [
+          [-38, 26, 28],
+          [-38, 4, 34],
+          [-38, -20, 35],
+          [-40, -38, 34],
+          [-43, -50, 32]
+        ],
+        [
+          [-42, 22, 25],
+          [-42, 2, 31],
+          [-42, -18, 32],
+          [-44, -36, 31],
+          [-46, -48, 29]
+        ],
+        [
+          [-44, 18, 21],
+          [-45, 0, 26],
+          [-45, -18, 27],
+          [-47, -34, 26],
+          [-48, -44, 24]
+        ]
+      ],
+      "function": "Major frontoparietal association complex (SLF-II/III) coursing superior to the insula linking left DLPFC/ventral premotor cortex with the inferior parietal lobule for phonological articulation, praxis, and executive working memory.",
+      "deficitIfInjured": "Articulatory apraxia/anarthria (SLF-III), ideomotor apraxia, phonological working-memory impairment, and executive slowing.",
+      "desSign": "Awake bipolar stimulation of left SLF-III provokes dysarthria, speech apraxia, and articulatory arrest during counting and naming.",
+      "surgicalPearl": "Left SLF-III lies immediately superficial and lateral to the arcuate fasciculus beneath the frontoparietal operculum; preserve it during transopercular or frontoparietal tumor resections via awake articulatory testing."
+    },
+    {
+      "id": "slf_right",
+      "name": "Right Superior Longitudinal Fasciculus",
+      "shortName": "SLF-R",
+      "system": "association",
+      "hemisphere": "right",
+      "color": "#facc15",
+      "controlPolylines": [
+        [
+          [34, 28, 32],
+          [35, 8, 38],
+          [36, -16, 39],
+          [38, -36, 38],
+          [40, -52, 36]
+        ],
+        [
+          [38, 26, 28],
+          [38, 4, 34],
+          [38, -20, 35],
+          [40, -38, 34],
+          [43, -50, 32]
+        ],
+        [
+          [42, 22, 25],
+          [42, 2, 31],
+          [42, -18, 32],
+          [44, -36, 31],
+          [46, -48, 29]
+        ],
+        [
+          [44, 18, 21],
+          [45, 0, 26],
+          [45, -18, 27],
+          [47, -34, 26],
+          [48, -44, 24]
+        ]
+      ],
+      "function": "Right-hemisphere frontoparietal attention and visuospatial network (SLF-II/III) connecting middle frontal/premotor cortex with right inferior parietal lobule for spatial awareness and mentalizing.",
+      "deficitIfInjured": "Contralateral (left) hemispatial neglect, visuospatial disorientation, and impaired sustained spatial attention.",
+      "desSign": "Awake subcortical stimulation of right SLF-II induces reproducible rightward deviation (>5-10%) during the line-bisection task.",
+      "surgicalPearl": "The right hemisphere is not 'non-eloquent'—for right frontoparietal gliomas abutting SLF-II, consider awake line-bisection mapping to prevent debilitating permanent left hemispatial neglect."
+    },
+    {
+      "id": "ifof_left",
+      "name": "Left Inferior Fronto-Occipital Fasciculus",
+      "shortName": "IFOF-L",
+      "system": "association",
+      "hemisphere": "left",
+      "color": "#c084fc",
+      "controlPolylines": [
+        [
+          [-38, 40, 10],
+          [-34, 20, 4],
+          [-32, 3, -3],
+          [-33, -20, -1],
+          [-31, -54, 4],
+          [-22, -82, 10]
+        ],
+        [
+          [-34, 44, 3],
+          [-33, 22, -1],
+          [-32, 2, -5],
+          [-34, -22, -4],
+          [-32, -56, 0],
+          [-24, -84, 3]
+        ],
+        [
+          [-28, 44, -4],
+          [-30, 20, -5],
+          [-31, 0, -7],
+          [-33, -24, -7],
+          [-30, -58, -4],
+          [-22, -84, -4]
+        ],
+        [
+          [-40, 36, -2],
+          [-35, 18, -3],
+          [-34, -2, -6],
+          [-36, -24, -5],
+          [-34, -56, -2],
+          [-28, -80, 0]
+        ]
+      ],
+      "function": "Direct ventral semantic association pathway spanning orbitofrontal/IFG cortex, compacting tightly through the ventral extreme capsule and temporal stem, then sweeping through the sagittal stratum to occipital cortex.",
+      "deficitIfInjured": "Severe semantic aphasia (impaired conceptual meaning and semantic paraphasias), verbal anomia, and multimodal semantic processing deficits.",
+      "desSign": "Awake bipolar subcortical stimulation induces reproducible semantic paraphasias (e.g., substituting 'lion' for 'tiger') during picture naming and Pyramid & Palm Trees semantic association.",
+      "surgicalPearl": "The left IFOF forms the critical deep ventral floor of insular gliomas at the limen insulae and courses immediately medial to left TPO lesions inside the sagittal stratum—never violate a semantic-positive ventral plane."
+    },
+    {
+      "id": "ifof_right",
+      "name": "Right Inferior Fronto-Occipital Fasciculus",
+      "shortName": "IFOF-R",
+      "system": "association",
+      "hemisphere": "right",
+      "color": "#a855f7",
+      "controlPolylines": [
+        [
+          [38, 40, 10],
+          [34, 20, 4],
+          [32, 3, -3],
+          [33, -20, -1],
+          [31, -54, 4],
+          [22, -82, 10]
+        ],
+        [
+          [34, 44, 3],
+          [33, 22, -1],
+          [32, 2, -5],
+          [34, -22, -4],
+          [32, -56, 0],
+          [24, -84, 3]
+        ],
+        [
+          [28, 44, -4],
+          [30, 20, -5],
+          [31, 0, -7],
+          [33, -24, -7],
+          [30, -58, -4],
+          [22, -84, -4]
+        ],
+        [
+          [40, 36, -2],
+          [35, 18, -3],
+          [34, -2, -6],
+          [36, -24, -5],
+          [34, -56, -2],
+          [28, -80, 0]
+        ]
+      ],
+      "function": "Right ventral fronto-occipital association bundle passing through the right temporal stem and sagittal stratum mediating non-verbal semantic processing, facial emotion recognition, and visual-spatial integration.",
+      "deficitIfInjured": "Impaired non-verbal semantic association, prosopagnosia/facial emotion recognition deficits, and visuospatial cognitive slowing.",
+      "desSign": "Awake stimulation can disrupt non-verbal semantic matching (Pyramid & Palm Trees) and facial-emotion recognition tasks.",
+      "surgicalPearl": "In right temporal-stem and insular operations, recognize the compact waist of right IFOF immediately beneath the limen insulae, just superior to the uncinate fasciculus and lateral to the anterior perforated substance."
+    },
+    {
+      "id": "or_left",
+      "name": "Left Optic Radiation (Meyer's Loop)",
+      "shortName": "OR-L",
+      "system": "projection",
+      "hemisphere": "left",
+      "color": "#34d399",
+      "controlPolylines": [
+        [
+          [-23, -24, -5],
+          [-34, -14, -12],
+          [-40, -8, -17],
+          [-43, -24, -14],
+          [-37, -50, -7],
+          [-25, -72, -4],
+          [-13, -84, -2]
+        ],
+        [
+          [-23, -24, -4],
+          [-34, -17, -10],
+          [-42, -16, -13],
+          [-42, -32, -10],
+          [-36, -54, -4],
+          [-24, -74, -1],
+          [-13, -85, 1]
+        ],
+        [
+          [-23, -24, -3],
+          [-33, -25, -4],
+          [-37, -36, -3],
+          [-34, -56, 0],
+          [-24, -75, 2],
+          [-14, -86, 4]
+        ],
+        [
+          [-23, -24, -2],
+          [-31, -29, 3],
+          [-34, -40, 7],
+          [-30, -58, 8],
+          [-22, -74, 8],
+          [-12, -82, 9]
+        ]
+      ],
+      "function": "Geniculocalcarine visual projection fibers from left LGN sweeping anteriorly around the temporal horn (Meyer's loop), directly posteriorly (central macular bundle), and dorsally (Baum's loop) along the ventricular atrium to left V1.",
+      "deficitIfInjured": "Contralateral (right) superior quadrantanopsia ('pie-in-the-sky') from Meyer's loop injury, right inferior quadrantanopsia from dorsal Baum's loop injury, or complete right homonymous hemianopsia from atrial sagittal stratum transection.",
+      "desSign": "Awake subcortical stimulation elicits transient phosphenes, flashes, blurred shadows, or scotomas in the contralateral (right) visual hemifield during dual-quadrant visual presentation.",
+      "surgicalPearl": "Meyer's loop drapes over the roof and lateral wall of the temporal horn (reaching ~22-37 mm from the temporal pole); in TPO and atrial surgery, enter through an inferior temporal or superior parieto-occipital corridor to stay clear of the lateral atrial wall."
+    },
+    {
+      "id": "or_right",
+      "name": "Right Optic Radiation (Meyer's Loop)",
+      "shortName": "OR-R",
+      "system": "projection",
+      "hemisphere": "right",
+      "color": "#10b981",
+      "controlPolylines": [
+        [
+          [23, -24, -5],
+          [34, -14, -12],
+          [40, -8, -17],
+          [43, -24, -14],
+          [37, -50, -7],
+          [25, -72, -4],
+          [13, -84, -2]
+        ],
+        [
+          [23, -24, -4],
+          [34, -17, -10],
+          [42, -16, -13],
+          [42, -32, -10],
+          [36, -54, -4],
+          [24, -74, -1],
+          [13, -85, 1]
+        ],
+        [
+          [23, -24, -3],
+          [33, -25, -4],
+          [37, -36, -3],
+          [34, -56, 0],
+          [24, -75, 2],
+          [14, -86, 4]
+        ],
+        [
+          [23, -24, -2],
+          [31, -29, 3],
+          [34, -40, 7],
+          [30, -58, 8],
+          [22, -74, 8],
+          [12, -82, 9]
+        ]
+      ],
+      "function": "Right geniculocalcarine visual projection fibers linking right LGN to right calcarine cortex via anterior temporal Meyer's loop, central macular bundle, and dorsal parietal Baum's loop.",
+      "deficitIfInjured": "Contralateral (left) superior quadrantanopsia (Meyer's loop), left inferior quadrantanopsia (Baum's loop), or complete left homonymous hemianopsia jeopardizing driving privileges.",
+      "desSign": "Awake subcortical stimulation produces transient phosphenes or visual field extinction in the contralateral (left) hemifield; asleep monitoring utilizes flash VEP.",
+      "surgicalPearl": "Always evaluate patient driving requirements preoperatively and map the optic radiation with tractography (and awake quadrant testing when feasible) for lesions near the temporal horn or ventricular atrium."
+    },
+    {
+      "id": "cc_commissure",
+      "name": "Corpus Callosum (Interhemispheric Commissure)",
+      "shortName": "CC",
+      "system": "commissural",
+      "hemisphere": "bilateral",
+      "color": "#f472b6",
+      "controlPolylines": [
+        [
+          [-34, 44, 10],
+          [-22, 34, 11],
+          [-10, 26, 12],
+          [0, 25, 12],
+          [10, 26, 12],
+          [22, 34, 11],
+          [34, 44, 10]
+        ],
+        [
+          [-38, 12, 34],
+          [-24, 10, 28],
+          [-10, 8, 25],
+          [0, 8, 24],
+          [10, 8, 25],
+          [24, 10, 28],
+          [38, 12, 34]
+        ],
+        [
+          [-40, -10, 36],
+          [-25, -11, 30],
+          [-11, -11, 27],
+          [0, -11, 26],
+          [11, -11, 27],
+          [25, -11, 30],
+          [40, -10, 36]
+        ],
+        [
+          [-38, -32, 30],
+          [-24, -32, 26],
+          [-10, -32, 23],
+          [0, -32, 22],
+          [10, -32, 23],
+          [24, -32, 26],
+          [38, -32, 30]
+        ],
+        [
+          [-32, -68, 12],
+          [-22, -54, 14],
+          [-11, -43, 16],
+          [0, -40, 16],
+          [11, -43, 16],
+          [22, -54, 14],
+          [32, -68, 12]
+        ]
+      ],
+      "function": "Largest interhemispheric white-matter commissure uniting homologous frontal (forceps minor/genu), premotor-sensorimotor (body), parietal (isthmus), and occipital (forceps major/splenium) cortices across the midline.",
+      "deficitIfInjured": "Callosal disconnection syndromes: alien hand/bimanual apraxia (anterior/midbody), impaired interhemispheric SMA recovery, or alexia without agraphia when splenium and left V1 are injured.",
+      "desSign": "Stimulation of the anterior/midbody disrupts bimanual coordination; the midline corpus callosum appears bright red (left-right X axis) on DTI DEC color maps.",
+      "surgicalPearl": "During anterior interhemispheric transcallosal approaches, limit the callosotomy to <=20 mm in the anterior body behind the genu and protect both pericallosal arteries along the callosal sulcus to avoid disconnection morbidity."
+    }
+  ]
+}

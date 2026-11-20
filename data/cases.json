@@ -1,0 +1,464 @@
+{
+  "schemaVersion": "1.0.0",
+  "cases": [
+    {
+      "id": "case01_right_frontal_gbm",
+      "title": "Right Frontal Premotor Glioblastoma",
+      "pathology": "Glioblastoma, IDH-wildtype (CNS WHO Grade 4)",
+      "approachName": "Right Frontal Craniotomy — Trans-Sulcal Middle Frontal Corridor",
+      "defaultCamera": {
+        "yaw": 0.92,
+        "pitch": 0.48,
+        "zoom": 1.15
+      },
+      "lesion": {
+        "primaryEllipsoid": {
+          "center": [26, 8, 46],
+          "radii": [15, 16, 14]
+        },
+        "secondaryEllipsoid": null,
+        "edemaEllipsoid": {
+          "center": [26, 8, 46],
+          "radii": [22, 23, 20]
+        },
+        "color": "#ec4899",
+        "edemaColor": "#38bdf8"
+      },
+      "defaultCorridor": {
+        "entryMni": [40, 26, 56],
+        "targetMni": [26, 8, 46],
+        "radiusMm": 7,
+        "approachMode": "transcortical"
+      },
+      "recommendedMapping": "Asleep TIVA with SSEP central sulcus phase reversal, continuous cortical strip MEPs over right M1, and high-frequency monopolar subcortical CST mapping (optional awake line-bisection if extending into right SLF-II).",
+      "clinicalPresentation": "A 61-year-old right-handed man presents with 3 weeks of progressive left hand clumsiness, mild abulia, and a new focal motor seizure. Contrast-enhanced MRI demonstrates a ring-enhancing, centrally necrotic right superior/middle frontal mass abutting the right supplementary motor area medially and indenting the anterior border of the precentral sulcus posteriorly.",
+      "surgicalPearls": [
+        "Enter anteriorly through the right middle frontal gyrus/superior frontal sulcus to angle away from the descending right CST and M1 hand knob.",
+        "Establish a reliable continuous cortical MEP strip over mapped right M1 prior to deep resection so posterior margin safety is monitored continuously.",
+        "Use a monopolar suction-stimulator (train-of-five, ~1 mA per 1 mm rule) along the posterior-deep cavity wall, halting resection at 3-5 mA to prevent permanent hemiplegia.",
+        "Anticipate and preoperatively counsel for reversible postoperative SMA syndrome (transient left hemiparesis/akinesia) when resecting medial superior frontal tumor.",
+        "Avoid violating right SLF-II along the inferior-lateral margin to preserve visuospatial attention and prevent left hemispatial neglect."
+      ],
+      "keyHazards": [
+        "sma_right",
+        "cst_right",
+        "m1_right",
+        "slf_right"
+      ]
+    },
+    {
+      "id": "case02_left_insular_lgg",
+      "title": "Left Insular Diffuse Low-Grade Glioma (Zone I+IV)",
+      "pathology": "Astrocytoma, IDH-mutant (CNS WHO Grade 2)",
+      "approachName": "Awake Left Frontotemporal Craniotomy — Transopercular / Trans-Sylvian Corridor",
+      "defaultCamera": {
+        "yaw": -1.35,
+        "pitch": 0.14,
+        "zoom": 1.25
+      },
+      "lesion": {
+        "primaryEllipsoid": {
+          "center": [-36, 2, 4],
+          "radii": [11, 16, 13]
+        },
+        "secondaryEllipsoid": {
+          "center": [-38, 16, -2],
+          "radii": [8, 10, 9]
+        },
+        "edemaEllipsoid": {
+          "center": [-36, 4, 3],
+          "radii": [15, 22, 17]
+        },
+        "color": "#d946ef",
+        "edemaColor": "#60a5fa"
+      },
+      "defaultCorridor": {
+        "entryMni": [-62, 6, 10],
+        "targetMni": [-36, 2, 4],
+        "radiusMm": 6,
+        "approachMode": "transcortical"
+      },
+      "recommendedMapping": "Awake asleep-awake-asleep craniotomy with bipolar cortical/subcortical DES (60 Hz) during continuous DO80 picture naming, counting, and semantic association, paired with monopolar subcortical CST mapping and ECoG.",
+      "clinicalPresentation": "A 34-year-old right-handed woman presents after two focal impaired-awareness seizures with transient word-finding pauses and normal baseline neurological exam. T2/FLAIR MRI reveals a non-enhancing expansive left insular mass extending into the anterior-inferior limen insulae (Berger-Sanai Zones I and IV) immediately enclosed by Broca's area, AF, IFOF, and PLIC.",
+      "surgicalPearls": [
+        "Map the frontal and temporal opercula thoroughly with awake bipolar DES before selecting a silent transopercular window or splitting the Sylvian fissure to spare Broca's area and ventral premotor speech arrest sites.",
+        "Respect the left IFOF through the ventral extreme capsule and temporal stem as the deep inferior functional floor—reproducible semantic paraphasias signal the inferior resection limit.",
+        "Respect the left arcuate fasciculus (AF-L) curving superoposteriorly beneath the superior limiting sulcus—phonemic paraphasias or repetition arrest define the posterosuperior limit.",
+        "Identify and preserve the lateral lenticulostriate arteries arising from M1 along the anterior perforated substance; their injury causes catastrophic internal capsule infarction.",
+        "Use subcortical monopolar motor mapping along the deep posterior-medial wall (posterior limb of internal capsule / CST-L) while preserving skeletonized M2/M3 Sylvian branches."
+      ],
+      "keyHazards": [
+        "ifof_left",
+        "af_left",
+        "broca_left",
+        "cst_left"
+      ]
+    },
+    {
+      "id": "case03_left_tpo_met",
+      "title": "Left TPO Junction Solitary Metastasis",
+      "pathology": "Metastatic Adenocarcinoma (NSCLC Primary)",
+      "approachName": "Left Temporo-Parieto-Occipital Craniotomy — Sulcus-Guided Transcortical Corridor",
+      "defaultCamera": {
+        "yaw": -2.18,
+        "pitch": 0.18,
+        "zoom": 1.22
+      },
+      "lesion": {
+        "primaryEllipsoid": {
+          "center": [-40, -50, 4],
+          "radii": [12, 12, 11]
+        },
+        "secondaryEllipsoid": null,
+        "edemaEllipsoid": {
+          "center": [-40, -50, 4],
+          "radii": [20, 20, 18]
+        },
+        "color": "#f43f5e",
+        "edemaColor": "#38bdf8"
+      },
+      "defaultCorridor": {
+        "entryMni": [-58, -56, 8],
+        "targetMni": [-40, -50, 4],
+        "radiusMm": 6,
+        "approachMode": "transcortical"
+      },
+      "recommendedMapping": "Awake craniotomy with cortical/subcortical bipolar DES for picture naming, reading, auditory comprehension, and dual-quadrant visual field testing (or asleep VEP/DTI navigation if awake contraindicated).",
+      "clinicalPresentation": "A 57-year-old right-handed woman with controlled lung adenocarcinoma develops progressive anomia, mild reading difficulty, and a right superior visual field cut. MRI shows a well-circumscribed 2.4 cm ring-enhancing left temporo-parieto-occipital junction metastasis with prominent vasogenic edema adjacent to Wernicke's cortex and the sagittal stratum.",
+      "surgicalPearls": [
+        "Recognize the left TPO junction as a dense multi-tract crossroads: Wernicke's pSTG/angular cortex and arching AF-L lie superficially/superiorly while IFOF-L and left optic radiation run together inside the deep sagittal stratum lateral to the ventricular atrium.",
+        "Optimize entry through an electrophysiologically silent posterior inferior temporal or lateral parieto-occipital sulcus rather than transgressing positive posterior STG/SMG language cortex.",
+        "Because metastases have a true gliotic pseudo-capsule, perform circumferential en-bloc or meticulous subpial/pericapsular dissection rather than aggressive blind suctioning into adjacent white-matter tracts.",
+        "Test contralateral visual quadrants during awake subcortical dissection along the medial/inferior tumor capsule to preserve Meyer's loop and central macular fibers of OR-L.",
+        "Preserve the Vein of Labbe along the posterolateral temporal surface to avoid catastrophic hemorrhagic temporal venous infarction."
+      ],
+      "keyHazards": [
+        "or_left",
+        "wernicke_left",
+        "ifof_left",
+        "af_left"
+      ]
+    },
+    {
+      "id": "case04_left_parasagittal_meningioma",
+      "title": "Left Middle-Third Parasagittal Meningioma",
+      "pathology": "Meningioma, Fibrous/Meningothelial (CNS WHO Grade 1)",
+      "approachName": "Left Parasagittal Craniotomy (Crossing Midline) — Interhemispheric / Convexity Corridor",
+      "defaultCamera": {
+        "yaw": -0.78,
+        "pitch": 1.12,
+        "zoom": 1.22
+      },
+      "lesion": {
+        "primaryEllipsoid": {
+          "center": [-14, -18, 62],
+          "radii": [12, 15, 12]
+        },
+        "secondaryEllipsoid": null,
+        "edemaEllipsoid": {
+          "center": [-16, -18, 58],
+          "radii": [16, 19, 15]
+        },
+        "color": "#f97316",
+        "edemaColor": "#7dd3fc"
+      },
+      "defaultCorridor": {
+        "entryMni": [-26, -10, 74],
+        "targetMni": [-14, -18, 62],
+        "radiusMm": 7,
+        "approachMode": "transcortical"
+      },
+      "recommendedMapping": "Asleep TIVA with bilateral tibial/median SSEPs, continuous lower- and upper-extremity transcranial/cortical MEPs, microvascular Doppler for SSS patency, and precordial Doppler/ETCO2 for venous air embolism.",
+      "clinicalPresentation": "A 52-year-old teacher presents with progressive right foot drop, dragging of the right leg while climbing stairs, and brief right foot Jacksonian sensory-motor seizures. MRI and MRV reveal a homogeneously enhancing dural-based left middle-third parasagittal meningioma compressing the medial paracentral leg cortex of left M1 and abutting a patent superior sagittal sinus.",
+      "surgicalPearls": [
+        "Obtain preoperative MRV/CTV to determine SSS patency and map large Rolandic cortical bridging veins; never sacrifice a patent middle-third SSS.",
+        "Place burr holes on both sides of the midline and carefully strip the dura off the inner table before turning the bone flap across the SSS to avoid torrential sinus laceration.",
+        "Devascularize the dural/falcine attachment early, internally debulk the tumor core, and mobilize the arachnoid plane gently off the paracentral M1 leg lobule and pericallosal branches.",
+        "If tumor tightly invades the lateral wall of a patent middle-third SSS, leave a thin Simpson Grade IV cuff on the sinus wall for adjuvant stereotactic radiosurgery rather than risking fatal venous infarction.",
+        "Monitor right lower-extremity MEPs continuously and keep head elevation moderate with ready hemostatic matrix to prevent venous air embolism."
+      ],
+      "keyHazards": [
+        "sss_midline",
+        "m1_left",
+        "sma_left",
+        "cst_left"
+      ]
+    },
+    {
+      "id": "case05_sellar_pituitary",
+      "title": "Sellar/Suprasellar Pituitary Macroadenoma",
+      "pathology": "Pituitary Neuroendocrine Tumor (PitNET / Non-Functioning Macroadenoma)",
+      "approachName": "Endoscopic Endonasal Transsphenoidal Corridor",
+      "defaultCamera": {
+        "yaw": 0.18,
+        "pitch": -0.38,
+        "zoom": 1.45
+      },
+      "lesion": {
+        "primaryEllipsoid": {
+          "center": [0, -2, -23],
+          "radii": [9, 8, 9]
+        },
+        "secondaryEllipsoid": {
+          "center": [0, 0, -15],
+          "radii": [6, 5, 4]
+        },
+        "edemaEllipsoid": null,
+        "color": "#e879f9",
+        "edemaColor": "#60a5fa"
+      },
+      "defaultCorridor": {
+        "entryMni": [0, 42, -46],
+        "targetMni": [0, -2, -23],
+        "radiusMm": 4,
+        "approachMode": "endonasal"
+      },
+      "recommendedMapping": "Stereotactic skull-base neuronavigation, mandatory intraoperative microvascular Doppler ultrasonography over bilateral cavernous ICAs, and flash VEP/ERG visual surveillance under TIVA.",
+      "clinicalPresentation": "A 48-year-old architect presents with 6 months of bumping into doorframes bilaterally, headaches, and subtle secondary hypogonadism. Formal perimetry confirms asymmetric bitemporal hemianopsia, and dedicated pituitary MRI reveals a 1.8 cm sellar macroadenoma with suprasellar extension elevating the optic chiasm and abutting both cavernous ICAs (Knosp Grade 2).",
+      "surgicalPearls": [
+        "Maintain strict midline orientation inside the sphenoid sinus using the vomer, sphenoid keel, clival recess, optic prominences, and bilateral optico-carotid recesses (OCRs).",
+        "Sweep the sellar floor and lateral dural margins with a microvascular Doppler probe BEFORE making any dural opening to localize the cavernous/paraclival ICAs precisely.",
+        "Decompress the inferior and lateral intrasellar adenoma compartments first before resecting the superior dome so the diaphragma sellae does not prolapse prematurely and obscure lateral residual tumor.",
+        "Avoid blind superior traction against the thinned diaphragma sellae or arachnoid to prevent optic chiasm injury, superior hypophyseal artery avulsion, or high-flow CSF leak.",
+        "Inspect the suprasellar cistern with a 30-degree angled endoscope after descent of the diaphragma to verify thorough chiasmal decompression and preserve the compressed normal pituitary gland."
+      ],
+      "keyHazards": [
+        "ica_bilateral",
+        "optic_chiasm"
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q01",
+      "caseId": "case01_right_frontal_gbm",
+      "focusCamera": {
+        "yaw": 0.72,
+        "pitch": 0.78,
+        "zoom": 1.25
+      },
+      "highlightStructureIds": [
+        "sma_right",
+        "m1_right"
+      ],
+      "question": "Following gross-total resection of this right frontal glioblastoma extending into the medial superior frontal gyrus, the patient awakens with severe left hemiparesis and reduced motor initiation, yet intraoperative cortical MEPs remained stable and postoperative DWI shows no M1 or internal capsule ischemia. Which clinical entity and prognosis best fit this presentation?",
+      "options": [
+        "Permanent right corticospinal tract transection requiring lifelong bracing without meaningful motor recovery",
+        "Transient right SMA syndrome expected to substantially recover over weeks to months via contralateral SMA recruitment",
+        "Right cavernous ICA watershed infarction causing irreversible brachiofacial hemiplegia",
+        "Callosal disconnection syndrome causing isolated left tactile anomia without limb weakness"
+      ],
+      "correctIndex": 1,
+      "explanation": "Resection involving the supplementary motor area (medial SFG immediately anterior to M1) classically triggers SMA syndrome: abrupt contralateral akinesia/paresis despite an intact primary motor cortex and descending CST. Because continuous MEPs remained intact and DWI excludes pyramidal ischemia, functional recovery typically occurs within weeks to a few months via transcallosal compensation from the intact contralateral SMA.",
+      "pearl": "Intact intraoperative MEPs distinguish reversible SMA syndrome from permanent pyramidal tract injury—always counsel patients preoperatively about temporary postoperative weakness."
+    },
+    {
+      "id": "q02",
+      "caseId": "case01_right_frontal_gbm",
+      "focusCamera": {
+        "yaw": 1.28,
+        "pitch": 0.32,
+        "zoom": 1.25
+      },
+      "highlightStructureIds": [
+        "cst_right",
+        "slf_right"
+      ],
+      "question": "During deep posterior-inferior resection of the right frontal tumor near the corona radiata, high-frequency cathodal monopolar subcortical stimulation (train-of-five) elicits reproducible left upper-extremity MEPs at 3 mA (down from 10 mA earlier). What does this threshold signify?",
+      "options": [
+        "Stimulation current has spread to the contralateral left M1 across the corpus callosum",
+        "The probe is >15 mm anterior to the CST and resection can safely continue posteriorly by another centimeter",
+        "The resection margin is roughly ~3 mm from the right CST; halt deeper posterior resection in this plane to avoid permanent motor deficit",
+        "The patient is developing depth-of-anesthesia burst suppression causing false-positive EMG artifacts"
+      ],
+      "correctIndex": 2,
+      "explanation": "With high-frequency monopolar train-of-five subcortical mapping, the empirical current-distance relationship approximates 1 mA per 1 mm of distance to the corticospinal tract. A drop to 3 mA indicates critical proximity (~3 mm) to descending right CST fibers, signaling the functional posterior limit of safe resection.",
+      "pearl": "Respecting a 3-5 mA monopolar subcortical MEP stop threshold markedly reduces permanent postoperative hemiparesis while maximizing extent of resection."
+    },
+    {
+      "id": "q03",
+      "caseId": "case02_left_insular_lgg",
+      "focusCamera": {
+        "yaw": -1.32,
+        "pitch": 0.08,
+        "zoom": 1.35
+      },
+      "highlightStructureIds": [
+        "ifof_left",
+        "broca_left"
+      ],
+      "question": "During awake resection of this left insular low-grade glioma, bipolar direct electrical stimulation along the deep inferior-medial floor near the ventral extreme capsule and limen insulae reproducibly triggers semantic paraphasias (e.g., naming a picture of a 'tiger' as 'lion') without dysarthria. Which white-matter tract has been reached?",
+      "options": [
+        "Left Inferior Fronto-Occipital Fasciculus (IFOF), the core ventral semantic stream",
+        "Left Optic Radiation (Meyer's loop) inside the lateral occipital horn",
+        "Left Corticospinal Tract within the cerebral peduncle",
+        "Midbody commissural fibers of the Corpus Callosum"
+      ],
+      "correctIndex": 0,
+      "explanation": "The left IFOF funnels tightly through the ventral extreme capsule and temporal stem immediately deep and inferior to the insular cortex, forming the primary ventral semantic language pathway. Subcortical bipolar DES on the IFOF classically produces semantic paraphasias and defines the deep ventromedial functional limit of insular glioma resection.",
+      "pearl": "In Duffau's dual-stream model, semantic paraphasias along the temporal stem identify the IFOF—never resect past a reproducibly semantic-positive ventral plane."
+    },
+    {
+      "id": "q04",
+      "caseId": "case02_left_insular_lgg",
+      "focusCamera": {
+        "yaw": -1.52,
+        "pitch": 0.24,
+        "zoom": 1.3
+      },
+      "highlightStructureIds": [
+        "af_left",
+        "cst_left"
+      ],
+      "question": "As awake resection of the left insular glioma continues superoposteriorly beneath the superior limiting sulcus, bipolar subcortical DES elicits reproducible phonemic paraphasias (e.g., saying 'tapple' for 'table') and repetition errors. Which tract forms this superoposterior boundary, and which tract lies deepest posteromedially?",
+      "options": [
+        "Left Optic Radiation superoposteriorly; Right Thalamus posteromedially",
+        "Forceps minor of the Corpus Callosum superoposteriorly; Optic Chiasm posteromedially",
+        "Left IFOF superoposteriorly; Superior Sagittal Sinus posteromedially",
+        "Left Arcuate Fasciculus (dorsal phonological stream) superoposteriorly; Left CST (PLIC) deepest posteromedially"
+      ],
+      "correctIndex": 3,
+      "explanation": "The left arcuate fasciculus arches superoposteriorly around the insula beneath the frontoparietal operculum and mediates phonological encoding; DES here causes phonemic paraphasias and repetition arrest. Deeper along the posterior-medial insular wall lies the posterior limb of the internal capsule carrying the descending left CST.",
+      "pearl": "Think of a dominant insular glioma as enclosed by a 3D white-matter cage: Broca/SLF anteriorly-laterally, AF superoposteriorly, IFOF ventrally in the temporal stem, and CST/lenticulostriates deep medially."
+    },
+    {
+      "id": "q05",
+      "caseId": "case03_left_tpo_met",
+      "focusCamera": {
+        "yaw": -2.05,
+        "pitch": 0.04,
+        "zoom": 1.32
+      },
+      "highlightStructureIds": [
+        "or_left",
+        "v1_bilateral"
+      ],
+      "question": "During a transcortical corridor to this left temporo-parieto-occipital metastasis, the inferior ventral fibers of the left optic radiation (Meyer's loop) sweep around the temporal horn and lateral wall of the atrium immediately deep to the cavity. Transection of these ventral left fibers produces which classic visual field deficit?",
+      "options": [
+        "Bitemporal hemianopsia affecting both peripheral temporal fields",
+        "Right superior homonymous quadrantanopsia ('pie-in-the-sky' visual field cut)",
+        "Left inferior homonymous quadrantanopsia ('pie-on-the-floor' visual field cut)",
+        "Isolated left monocular central scotoma with intact right eye perimetry"
+      ],
+      "correctIndex": 1,
+      "explanation": "Meyer's loop carries fibers from the inferior retina (representing the contralateral superior visual quadrant) anteriorly around the temporal horn to the inferior bank of the calcarine fissure. Left-sided Meyer's loop injury therefore causes a contralateral right superior homonymous quadrantanopsia.",
+      "pearl": "Ventral optic radiation (Meyer's loop) = contralateral superior quadrant ('pie in the sky'); dorsal optic radiation (Baum's loop) = contralateral inferior quadrant ('pie on the floor')."
+    },
+    {
+      "id": "q06",
+      "caseId": "case03_left_tpo_met",
+      "focusCamera": {
+        "yaw": -2.28,
+        "pitch": 0.28,
+        "zoom": 1.28
+      },
+      "highlightStructureIds": [
+        "wernicke_left",
+        "ifof_left",
+        "af_left"
+      ],
+      "question": "When choosing an entry sulcus and dissection corridor for a left TPO junction metastasis, which layered anatomical relationship explains why a careless wide transcortical trajectory threatens comprehension, semantic naming, and contralateral vision simultaneously?",
+      "options": [
+        "Left M1 face cortex directly overlies the cavernous ICA and optic chiasm at the TPO junction",
+        "Left SMA overlies the anterior genu of the corpus callosum and superior sagittal sinus",
+        "Superficial Wernicke's pSTG/angular cortex and arching AF-L overlie the deep sagittal stratum containing both IFOF-L and left optic radiation lateral to the atrium",
+        "Bilateral thalami fuse directly beneath the left inferior temporal gyrus without intervening white matter"
+      ],
+      "correctIndex": 2,
+      "explanation": "The left TPO junction is a tightly layered eloquent hub: Wernicke's posterior perisylvian cortex and the vertical/arching segment of the left arcuate fasciculus sit superficially and superiorly, while deeper along the lateral wall of the ventricular atrium runs the sagittal stratum packing both the left IFOF and optic radiation side by side.",
+      "pearl": "In left TPO surgery, enter via a silent posterior inferior temporal or lateral parieto-occipital sulcus and stay strictly within the metastatic pseudo-capsule to spare both AF and the deep sagittal stratum."
+    },
+    {
+      "id": "q07",
+      "caseId": "case04_left_parasagittal_meningioma",
+      "focusCamera": {
+        "yaw": -0.52,
+        "pitch": 1.25,
+        "zoom": 1.28
+      },
+      "highlightStructureIds": [
+        "sss_midline",
+        "m1_left"
+      ],
+      "question": "Preoperative MR venography demonstrates that this left middle-third parasagittal meningioma invades the lateral wall of the superior sagittal sinus while the central lumen remains patent. Why is complete ligation and excision of the patent middle-third SSS strongly contraindicated?",
+      "options": [
+        "Occluding a patent middle-third SSS disrupts Rolandic cortical venous outflow, risking catastrophic bilateral venous infarction, hemorrhagic swelling, and paraplegia/hemiplegia",
+        "The middle-third SSS supplies primary arterial blood flow to the anterior spinal artery and medulla",
+        "Opening the middle-third SSS selectively injures the optic chiasm and bilateral cavernous ICAs",
+        "Ligating the middle-third SSS prevents postoperative CSF reabsorption exclusively in the temporal horn"
+      ],
+      "correctIndex": 0,
+      "explanation": "Whereas the anterior third of the SSS (anterior to the coronal suture) can occasionally be ligated if necessary, the middle third drains critical bilateral Rolandic/central cortical bridging veins. Acute occlusion of a patent middle-third SSS carries an unacceptably high risk of bilateral venous stasis, hemorrhagic infarction, malignant edema, and permanent paraplegia or death.",
+      "pearl": "Preserve a patent middle- or posterior-third SSS and major Rolandic bridging veins—leave a thin Simpson Grade IV cuff on the lateral sinus wall for radiosurgery when needed."
+    },
+    {
+      "id": "q08",
+      "caseId": "case04_left_parasagittal_meningioma",
+      "focusCamera": {
+        "yaw": -0.95,
+        "pitch": 0.96,
+        "zoom": 1.3
+      },
+      "highlightStructureIds": [
+        "m1_left",
+        "sma_left",
+        "cst_left"
+      ],
+      "question": "This left parasagittal meningioma compresses the medial precentral cortex (paracentral lobule) around MNI [-14, -18, 62] immediately posterior to left SMA. Based on M1 Penfield homunculus somatotopy, which primary motor deficit is most characteristic of focal compression or pial injury at this exact medial site?",
+      "options": [
+        "Ipsilateral (left) lower facial droop and dysarthria",
+        "Contralateral (right) isolated thumb and index finger weakness with preserved gait",
+        "Bilateral gaze palsy with complete preservation of limb strength",
+        "Contralateral (right) lower-extremity weakness (foot drop and crural monoparesis)"
+      ],
+      "correctIndex": 3,
+      "explanation": "Along the primary motor homunculus, the contralateral lower extremity (foot and leg) is represented medially within the paracentral lobule flanking the interhemispheric falx (x ≈ ±10 mm), whereas the hand maps laterally to the omega knob (x ≈ ±36 mm) and the face maps inferolaterally (x ≈ ±52 mm).",
+      "pearl": "Medial parasagittal lesions near the central sulcus classically present with contralateral crural monoparesis or foot drop—monitor bilateral lower-extremity MEPs throughout dissection."
+    },
+    {
+      "id": "q09",
+      "caseId": "case05_sellar_pituitary",
+      "focusCamera": {
+        "yaw": 0.08,
+        "pitch": -0.26,
+        "zoom": 1.55
+      },
+      "highlightStructureIds": [
+        "optic_chiasm"
+      ],
+      "question": "The suprasellar dome of this pituitary macroadenoma rises to z = -15 mm and compresses the central inferior aspect of the optic chiasm ([0, 3, -14]). Compression of which fiber population produces the hallmark visual field deficit?",
+      "options": [
+        "Ipsilateral uncrossed temporal retinal fibers, causing binasal hemianopsia",
+        "Decussating nasal retinal fibers within the central chiasm, causing bitemporal hemianopsia (often superotemporal first)",
+        "Post-geniculate Baum's loop fibers, causing right inferior homonymous quadrantanopsia",
+        "Oculomotor (CN III) parasympathetic fibers, causing isolated homonymous hemianopsia"
+      ],
+      "correctIndex": 1,
+      "explanation": "Nasal retinal fibers—which receive visual input from the temporal visual fields—cross midline in the central optic chiasm. Upward-growing sellar macroadenomas compress the inferior crossing nasal fibers first, classically producing bitemporal hemianopsia beginning in the superotemporal quadrants.",
+      "pearl": "Inferior central chiasmal compression yields 'bitemporal superior-first' field loss; decompress the sellar mass inferiorly and centrally so the chiasm settles gently without traction."
+    },
+    {
+      "id": "q10",
+      "caseId": "case05_sellar_pituitary",
+      "focusCamera": {
+        "yaw": 0.22,
+        "pitch": -0.44,
+        "zoom": 1.55
+      },
+      "highlightStructureIds": [
+        "ica_bilateral",
+        "optic_chiasm"
+      ],
+      "question": "The endoscopic endonasal transsphenoidal corridor passes along the midline sphenoid sinus between the bilateral paraclival/cavernous internal carotid arteries (x ≈ ±11 mm) with only millimeters of lateral wall clearance. What intraoperative safety step is mandatory before opening the sellar dura laterally?",
+      "options": [
+        "Perform an awake speech-arrest mapping protocol with a 60 Hz Ojemann stimulator on the sphenoid keel",
+        "Occlude the left cavernous sinus with titanium clips before inspecting the sellar floor",
+        "Verify exact bilateral ICA positions using intraoperative microvascular Doppler ultrasonography alongside anatomical OCR landmarks and neuronavigation",
+        "Extend the initial dural opening far laterally first before midline decompression to expose the cavernous sinus early"
+      ],
+      "correctIndex": 2,
+      "explanation": "Because tumor expansion or anatomic variants (such as 'kissing carotids') can distort bony carotid prominences and render preoperative navigation slightly shifted, sweeping the sellar dura with a microvascular Doppler probe before incising—combined with identifying the medial and lateral optico-carotid recesses—is mandatory to prevent catastrophic ICA injury.",
+      "pearl": "Always keep the initial sellar dural incision strictly midline and re-verify bilateral ICA signals with microvascular Doppler prior to any lateral cavernosal extension."
+    }
+  ]
+}
