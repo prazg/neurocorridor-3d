@@ -69,6 +69,16 @@ const CASE_SHORT_TITLES = Object.freeze({
   case05_sellar_pituitary: { short: 'Sellar Pituitary', tag: 'ICA · Chiasm' },
 });
 
+const CAMERA_SHORTCUT_MAP = Object.freeze({
+  '1': 'oblique',
+  '2': 'superior',
+  '3': 'anterior',
+  '4': 'left',
+  '5': 'right',
+  '6': 'skull_base',
+  '7': 'corridor_view',
+});
+
 // ============================================================================
 // Pure Utility & XSS-Safe Formatting Helpers
 // ============================================================================
@@ -80,6 +90,18 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+}
+
+function sanitizeHexColor(value, fallback = '#38bdf8') {
+  const str = String(value ?? '').trim();
+  return /^#[0-9a-fA-F]{3,8}$/.test(str) ? str : fallback;
+}
+
+function isEditableTarget(el) {
+  if (!el || typeof el !== 'object') return false;
+  const tag = el.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  return Boolean(el.isContentEditable);
 }
 
 function clamp(v, lo, hi) {
@@ -185,6 +207,11 @@ const appState = {
 
   sliceMni: [0, -14, 10],
   probeDepthFraction: 0.5,
+  probeDepthTouched: false,
+  isFlyingCorridor: false,
+  flyRafId: null,
+  flyLastTime: 0,
+  legendOpen: false,
 
   tractColorMode: 'anatomical', // 'anatomical' | 'dec'
   visibleStructures: {},
@@ -225,6 +252,9 @@ function cacheDomElements() {
     'hud-risk-badge',
     'hud-case-title',
     'hud-trajectory-stats',
+    'btn-toggle-legend',
+    'hud-legend-panel',
+    'hud-legend-chevron',
     'btn-color-anatomical',
     'btn-color-dec',
     'dec-legend',
@@ -238,6 +268,7 @@ function cacheDomElements() {
     'camera-presets',
     'hover-tooltip',
     // Slices & Probe
+    'probe-live-hazard',
     'click-mode-group',
     'slider-slice-z',
     'val-slice-z',
@@ -245,6 +276,9 @@ function cacheDomElements() {
     'val-slice-y',
     'slider-slice-x',
     'val-slice-x',
+    'btn-fly-corridor',
+    'fly-corridor-icon',
+    'fly-corridor-label',
     'slider-probe-depth',
     'val-probe-depth',
     // Right Panel Tabs
@@ -411,6 +445,8 @@ function loadCase(caseId, { flyCamera = true, preserveQuizHighlights = false } =
   const caseObj = appState.caseById.get(caseId);
   if (!caseObj) return;
 
+  stopCorridorFlight();
+
   appState.activeCaseId = caseObj.id;
   appState.lesion = cloneLesion(caseObj.lesion);
   appState.isCustomLesion = false;
@@ -428,6 +464,7 @@ function loadCase(caseId, { flyCamera = true, preserveQuizHighlights = false } =
   const tgt = appState.corridor.targetMni;
   appState.sliceMni = [Math.round(tgt[0]), Math.round(tgt[1]), Math.round(tgt[2])];
   appState.probeDepthFraction = 0.5;
+  appState.probeDepthTouched = false;
 
   // Hide optimizer banner & NIfTI card
   if (dom['optimizer-result-banner']) dom['optimizer-result-banner'].hidden = true;
@@ -659,7 +696,7 @@ function renderHazardTable() {
         <tr class="hazard-row${selected ? ' is-selected' : ''}" data-hazard-id="${escapeHtml(h.id)}" tabindex="0">
           <td>
             <div class="hazard-name-cell">
-              <span class="hazard-swatch" style="background:${escapeHtml(h.color)};"></span>
+              <span class="hazard-swatch" style="background:${sanitizeHexColor(h.color)};"></span>
               <div class="hazard-name-stack">
                 <div class="hazard-short-line">
                   <span class="hazard-short">${escapeHtml(h.shortName)}</span>
@@ -709,7 +746,7 @@ function renderAnatomyInspector(hazardId) {
   card.innerHTML = `
     <div class="inspector-head">
       <div class="inspector-title-wrap">
-        <span class="inspector-swatch" style="background:${escapeHtml(record.color)};"></span>
+        <span class="inspector-swatch" style="background:${sanitizeHexColor(record.color)};"></span>
         <div>
           <h3 class="inspector-title">${escapeHtml(record.name)}</h3>
           <div class="inspector-sub">
@@ -785,7 +822,7 @@ function renderAtlasToggles() {
         (t) => `
         <label class="atlas-chip-toggle" title="${escapeHtml(t.name)}">
           <input type="checkbox" data-tract-id="${escapeHtml(t.id)}" ${appState.visibleTracts[t.id] !== false ? 'checked' : ''}>
-          <span class="hazard-swatch" style="background:${escapeHtml(t.color)};"></span>
+          <span class="hazard-swatch" style="background:${sanitizeHexColor(t.color)};"></span>
           <span>${escapeHtml(t.shortName)}</span>
         </label>
       `
@@ -797,7 +834,7 @@ function renderAtlasToggles() {
         <div class="tract-system-head">
           <label class="atlas-check-label">
             <input type="checkbox" data-tract-system="${escapeHtml(group.key)}" checked>
-            <span class="hazard-swatch" style="background:${escapeHtml(primaryColor)};"></span>
+            <span class="hazard-swatch" style="background:${sanitizeHexColor(primaryColor)};"></span>
             <span>${escapeHtml(group.key)} — ${escapeHtml(group.label)}</span>
           </label>
           <div class="atlas-row-right">
@@ -818,7 +855,7 @@ function renderAtlasToggles() {
         <div class="atlas-item-row">
           <label class="atlas-check-label">
             <input type="checkbox" data-structure-id="${escapeHtml(s.id)}" ${appState.visibleStructures[s.id] !== false ? 'checked' : ''}>
-            <span class="hazard-swatch" style="background:${escapeHtml(s.color)};"></span>
+            <span class="hazard-swatch" style="background:${sanitizeHexColor(s.color)};"></span>
             <span>${escapeHtml(s.name)}</span>
           </label>
           <div class="atlas-row-right">
@@ -874,7 +911,7 @@ function renderCasePearls() {
       const distText = h ? `${h.corridorClearanceMm.toFixed(1)} mm` : '—';
       return `
         <button type="button" class="key-hazard-chip" data-pearl-hazard-id="${escapeHtml(id)}" title="Click to highlight ${escapeHtml(rec.name)} and inspect pearls">
-          <span class="hazard-swatch" style="background:${escapeHtml(rec.color)};"></span>
+          <span class="hazard-swatch" style="background:${sanitizeHexColor(rec.color)};"></span>
           <span>${escapeHtml(rec.shortName)}</span>
           <span class="risk-pill tier-${escapeHtml(tier)}">${escapeHtml(distText)}</span>
         </button>
@@ -1007,20 +1044,155 @@ function syncSliceAndProbeControlsUi() {
   if (dom['val-slice-z']) dom['val-slice-z'].textContent = formatSignedMm(sz, 0);
 
   if (dom['slider-probe-depth']) {
-    dom['slider-probe-depth'].value = String(Math.round(appState.probeDepthFraction * 100));
+    dom['slider-probe-depth'].value = String(roundTo(appState.probeDepthFraction * 100, 1));
   }
   updateProbeDepthReadout();
 }
 
 function updateProbeDepthReadout() {
-  if (!dom['val-probe-depth']) return;
   const pct = Math.round(appState.probeDepthFraction * 100);
   const len = appState.analysis?.trajectoryLengthMm;
-  if (Number.isFinite(len)) {
-    const dMm = len * appState.probeDepthFraction;
-    dom['val-probe-depth'].textContent = `${pct}% · ${dMm.toFixed(0)}mm`;
+  const dMm = Number.isFinite(len) ? len * appState.probeDepthFraction : null;
+
+  if (dom['val-probe-depth']) {
+    dom['val-probe-depth'].textContent = dMm !== null ? `${pct}% · ${dMm.toFixed(0)}mm` : `${pct}%`;
+  }
+
+  const liveBadge = dom['probe-live-hazard'];
+  if (!liveBadge) return;
+
+  let sliceData = null;
+  if (appState.analysis && typeof appState.analysis.probeCrossSection === 'function') {
+    try {
+      sliceData = appState.analysis.probeCrossSection(appState.probeDepthFraction);
+    } catch (_) {
+      sliceData = null;
+    }
+  }
+
+  const closest = sliceData?.closestAtSlice || null;
+  const depthTag = dMm !== null ? `${pct}% (${dMm.toFixed(0)} mm)` : `${pct}%`;
+
+  if (closest && Number.isFinite(closest.clearanceMm)) {
+    const tier = closest.riskTier || 'safe';
+    const label = closest.shortName || closest.name || 'Hazard';
+    liveBadge.className = `probe-hazard-readout tier-${tier}`;
+    liveBadge.textContent = `Probe ${depthTag} · ${label} ${closest.clearanceMm.toFixed(1)} mm`;
   } else {
-    dom['val-probe-depth'].textContent = `${pct}%`;
+    liveBadge.className = 'probe-hazard-readout tier-safe';
+    liveBadge.textContent = `Probe ${depthTag} · Clear`;
+  }
+}
+
+function syncSliceCrosshairToProbeDepth(depthFrac) {
+  if (!appState.corridor) return;
+  const [ex, ey, ez] = appState.corridor.entryMni;
+  const [tx, ty, tz] = appState.corridor.targetMni;
+  const t = clamp(depthFrac, 0, 1);
+  appState.sliceMni = [
+    roundTo(ex + (tx - ex) * t, 1),
+    roundTo(ey + (ty - ey) * t, 1),
+    roundTo(ez + (tz - ez) * t, 1),
+  ];
+}
+
+function syncFlyButtonUi() {
+  const btn = dom['btn-fly-corridor'];
+  if (!btn) return;
+  const playing = Boolean(appState.isFlyingCorridor);
+  btn.classList.toggle('is-playing', playing);
+  btn.setAttribute('aria-pressed', String(playing));
+  btn.setAttribute(
+    'aria-label',
+    playing
+      ? 'Pause surgical corridor advancement'
+      : 'Fly Along Corridor from cortical entry (0%) to target (100%)'
+  );
+  if (dom['fly-corridor-icon']) {
+    dom['fly-corridor-icon'].textContent = playing ? '⏸' : '▶';
+  }
+  if (dom['fly-corridor-label']) {
+    dom['fly-corridor-label'].textContent = playing ? 'Pause' : 'Fly';
+  }
+}
+
+function stopCorridorFlight() {
+  if (appState.flyRafId !== null) {
+    cancelAnimationFrame(appState.flyRafId);
+    appState.flyRafId = null;
+  }
+  if (appState.isFlyingCorridor) {
+    appState.isFlyingCorridor = false;
+  }
+  syncFlyButtonUi();
+}
+
+function stepCorridorFlight(now) {
+  appState.flyRafId = null;
+  if (!appState.isFlyingCorridor || !appState.corridor) {
+    stopCorridorFlight();
+    return;
+  }
+
+  const dt = clamp(now - appState.flyLastTime, 0, 64);
+  appState.flyLastTime = now;
+
+  const trajLen = appState.analysis?.trajectoryLengthMm || 55;
+  const durationMs = clamp(trajLen * 95, 4200, 7200);
+  const nextFrac = clamp(appState.probeDepthFraction + dt / durationMs, 0, 1);
+
+  appState.probeDepthFraction = nextFrac;
+  syncSliceCrosshairToProbeDepth(nextFrac);
+  syncSliceAndProbeControlsUi();
+  syncRendererState();
+
+  if (nextFrac >= 1) {
+    stopCorridorFlight();
+    return;
+  }
+
+  appState.flyRafId = requestAnimationFrame(stepCorridorFlight);
+}
+
+function startCorridorFlight() {
+  if (!appState.corridor || !appState.analysis) return;
+
+  if (!appState.probeDepthTouched || appState.probeDepthFraction >= 0.995) {
+    appState.probeDepthFraction = 0;
+  }
+  appState.probeDepthTouched = true;
+  appState.isFlyingCorridor = true;
+  appState.flyLastTime = performance.now();
+
+  syncFlyButtonUi();
+  syncSliceCrosshairToProbeDepth(appState.probeDepthFraction);
+  syncSliceAndProbeControlsUi();
+  syncRendererState();
+
+  if (appState.flyRafId === null) {
+    appState.flyRafId = requestAnimationFrame(stepCorridorFlight);
+  }
+}
+
+function toggleCorridorFlight() {
+  if (appState.isFlyingCorridor) {
+    stopCorridorFlight();
+  } else {
+    startCorridorFlight();
+  }
+}
+
+function setLegendOpen(open) {
+  const next = Boolean(open);
+  appState.legendOpen = next;
+  const btn = dom['btn-toggle-legend'];
+  const panel = dom['hud-legend-panel'];
+  if (btn) {
+    btn.classList.toggle('is-open', next);
+    btn.setAttribute('aria-expanded', String(next));
+  }
+  if (panel) {
+    panel.hidden = !next;
   }
 }
 
@@ -1159,6 +1331,7 @@ function runCorridorOptimizer() {
 
 function applyOptimizedCorridor() {
   if (!appState.optimizerResult?.bestCorridor) return;
+  stopCorridorFlight();
   appState.corridor = cloneCorridor(appState.optimizerResult.bestCorridor);
   appState.ghostCorridor = null;
   appState.optimizerResult = null;
@@ -1179,18 +1352,67 @@ function dismissOptimizedCorridor() {
 // Local Browser-Only NIfTI-1 (.nii / .nii.gz) Mask Loader
 // ============================================================================
 
+function renderNiftiError(message) {
+  const card = dom['nifti-status-card'];
+  const dropzone = dom['nifti-dropzone'];
+  const safeMsg = escapeHtml(message || 'Unable to parse NIfTI-1 file.');
+  if (dropzone) {
+    dropzone.classList.add('is-error');
+    setTimeout(() => dropzone.classList.remove('is-error'), 2200);
+  }
+  if (card) {
+    card.hidden = false;
+    card.classList.add('is-error');
+    card.setAttribute('role', 'alert');
+    card.innerHTML = `
+      <div class="nifti-status-head">
+        <div><strong>NIfTI Parse Error:</strong> ${safeMsg}</div>
+        <button type="button" class="btn-micro" data-nifti-action="dismiss" aria-label="Dismiss NIfTI error message">✕</button>
+      </div>
+    `;
+  }
+  showToast(`NIfTI error: ${message || 'Invalid file'}`, 'error');
+}
+
 async function handleNiftiFile(file) {
   if (!file) return;
+  stopCorridorFlight();
+
+  const fileName = String(file.name || 'mask.nii');
+  const lowerName = fileName.toLowerCase();
+
+  if (file.size === 0) {
+    renderNiftiError(`"${fileName}" is empty (0 bytes). Provide a non-empty MNI-152 .nii or .nii.gz binary mask.`);
+    return;
+  }
+  if (file.size > 160 * 1024 * 1024) {
+    renderNiftiError(`"${fileName}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 160 MB browser-local safety limit.`);
+    return;
+  }
+  if (lowerName.endsWith('.dcm') || lowerName.endsWith('.dicom')) {
+    renderNiftiError(`"${fileName}" appears to be a DICOM slice. Convert to a single-file MNI-152 .nii or .nii.gz binary lesion mask.`);
+    return;
+  }
+  if (lowerName.endsWith('.hdr') || lowerName.endsWith('.img')) {
+    renderNiftiError(`Dual-file NIfTI/Analyze (${fileName}) is unsupported. Export a single-file .nii or .nii.gz mask.`);
+    return;
+  }
+  if (!lowerName.endsWith('.nii') && !lowerName.endsWith('.nii.gz') && !lowerName.endsWith('.gz')) {
+    renderNiftiError(`Unsupported file extension on "${fileName}". Expected a .nii or .nii.gz MNI-152 binary mask.`);
+    return;
+  }
+
   const card = dom['nifti-status-card'];
   if (card) {
     card.hidden = false;
     card.classList.remove('is-error');
-    card.innerHTML = `<span class="mono-mini">Parsing "${escapeHtml(file.name)}" locally in browser memory…</span>`;
+    card.removeAttribute('role');
+    card.innerHTML = `<span class="mono-mini">Parsing "${escapeHtml(fileName)}" locally in browser memory…</span>`;
   }
 
   try {
     const buffer = await file.arrayBuffer();
-    const parsed = await parseMniNiftiMask(buffer, { fileName: file.name });
+    const parsed = await parseMniNiftiMask(buffer, { fileName });
     appState.customNiftiInfo = parsed;
     appState.isCustomLesion = true;
 
@@ -1221,6 +1443,8 @@ async function handleNiftiFile(file) {
       ];
     }
     appState.sliceMni = [Math.round(clampedTarget[0]), Math.round(clampedTarget[1]), Math.round(clampedTarget[2])];
+    appState.probeDepthFraction = 0.5;
+    appState.probeDepthTouched = false;
     appState.ghostCorridor = null;
     appState.optimizerResult = null;
     if (dom['optimizer-result-banner']) dom['optimizer-result-banner'].hidden = true;
@@ -1232,8 +1456,12 @@ async function handleNiftiFile(file) {
           : '';
       card.hidden = false;
       card.classList.remove('is-error');
+      card.removeAttribute('role');
       card.innerHTML = `
-        <div><strong>Loaded Locally:</strong> <code>${escapeHtml(parsed.fileName || file.name)}</code></div>
+        <div class="nifti-status-head">
+          <div><strong>Loaded Locally:</strong> <code>${escapeHtml(parsed.fileName || fileName)}</code></div>
+          <button type="button" class="btn-micro" data-nifti-action="dismiss" aria-label="Hide NIfTI status summary">✕</button>
+        </div>
         <div class="nifti-kv-grid">
           <span>Matrix: ${escapeHtml(parsed.dimensions.join('×'))}</span>
           <span>Affine: ${escapeHtml(parsed.affineSource)}</span>
@@ -1251,14 +1479,14 @@ async function handleNiftiFile(file) {
     syncSliceAndProbeControlsUi();
     recomputeAndRender();
     renderCasePearls();
-    showToast(`Parsed ${file.name} (${parsed.volumeCm3.toFixed(2)} cm³) locally in RAM.`, 'success');
+    showToast(`Parsed ${fileName} (${parsed.volumeCm3.toFixed(2)} cm³) locally in RAM.`, 'success');
   } catch (err) {
-    if (card) {
-      card.hidden = false;
-      card.classList.add('is-error');
-      card.innerHTML = `<strong>NIfTI Parse Error:</strong> ${escapeHtml(err?.message || String(err))}`;
-    }
-    showToast(`Failed to parse NIfTI file: ${err?.message || 'Invalid file'}`, 'error');
+    const rawMsg = err?.message || String(err);
+    const friendlyMsg =
+      lowerName.endsWith('.gz') && /decompress|gzip|fetch|stream/i.test(rawMsg)
+        ? `Corrupted or invalid gzip stream in "${fileName}" (${rawMsg}).`
+        : rawMsg;
+    renderNiftiError(friendlyMsg);
   }
 }
 
@@ -1455,7 +1683,7 @@ function handleStructureHover(hit) {
 
   tip.innerHTML = `
     <div class="tt-head">
-      <span class="tt-dot" style="background:${escapeHtml(hit.color || '#38bdf8')};"></span>
+      <span class="tt-dot" style="background:${sanitizeHexColor(hit.color, '#38bdf8')};"></span>
       <span>${escapeHtml(hit.name || hit.shortName || hit.id)}</span>
     </div>
     <div class="tt-meta">
@@ -1479,6 +1707,7 @@ function handleStructureHover(hit) {
 
 function handleSliceClick({ mniPoint, shiftKey }) {
   if (!Array.isArray(mniPoint) || !appState.corridor) return;
+  if (appState.isFlyingCorridor) stopCorridorFlight();
 
   const effectiveMode = shiftKey ? 'entry' : appState.sliceClickMode;
   appState.sliceMni = [roundTo(mniPoint[0], 1), roundTo(mniPoint[1], 1), roundTo(mniPoint[2], 1)];
@@ -1552,9 +1781,20 @@ function selectAndInspectHazard(hazardId, { switchToPlanner = false } = {}) {
 }
 
 function wireAllEvents() {
-  // 1. Top Mode Switcher
+  // 1. Top Mode Switcher (+ Keyboard Tab Arrow Navigation)
   dom['mode-btn-sandbox']?.addEventListener('click', () => setAppMode('sandbox'));
   dom['mode-btn-quiz']?.addEventListener('click', () => setAppMode('quiz'));
+  for (const [id, nextMode, nextId] of [
+    ['mode-btn-sandbox', 'quiz', 'mode-btn-quiz'],
+    ['mode-btn-quiz', 'sandbox', 'mode-btn-sandbox'],
+  ]) {
+    dom[id]?.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      setAppMode(nextMode);
+      dom[nextId]?.focus();
+    });
+  }
 
   // 2. Export Plan JSON & Markdown Summary + Reset Case
   dom['btn-export-json']?.addEventListener('click', () => {
@@ -1606,6 +1846,20 @@ function wireAllEvents() {
     loadCase(btn.dataset.caseId, { flyCamera: true });
   });
 
+  dom['case-selector-list']?.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const pills = Array.from(dom['case-selector-list'].querySelectorAll('.case-pill[data-case-id]'));
+    if (pills.length === 0) return;
+    const curBtn = e.target.closest('.case-pill[data-case-id]');
+    const curIdx = curBtn ? pills.indexOf(curBtn) : 0;
+    const nextIdx = (curIdx + (e.key === 'ArrowRight' ? 1 : -1) + pills.length) % pills.length;
+    e.preventDefault();
+    const nextBtn = pills[nextIdx];
+    if (appState.appMode === 'quiz') setAppMode('sandbox');
+    loadCase(nextBtn.dataset.caseId, { flyCamera: true });
+    nextBtn.focus();
+  });
+
   dom['case-selector-select']?.addEventListener('change', (e) => {
     if (appState.appMode === 'quiz') {
       setAppMode('sandbox');
@@ -1641,6 +1895,24 @@ function wireAllEvents() {
     syncRendererState();
   });
 
+  dom['slider-brain-opacity']?.addEventListener('dblclick', () => {
+    appState.brainOpacity = 0.24;
+    if (dom['slider-brain-opacity']) dom['slider-brain-opacity'].value = '0.24';
+    if (dom['val-brain-opacity']) dom['val-brain-opacity'].textContent = '24%';
+    syncRendererState();
+  });
+
+  dom['btn-toggle-legend']?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setLegendOpen(!appState.legendOpen);
+  });
+
+  document.addEventListener('pointerdown', (e) => {
+    if (!appState.legendOpen) return;
+    if (e.target.closest?.('.hud-legend-wrap')) return;
+    setLegendOpen(false);
+  });
+
   const bindToggle = (id, stateKey) => {
     dom[id]?.addEventListener('change', (e) => {
       appState[stateKey] = Boolean(e.target.checked);
@@ -1661,7 +1933,7 @@ function wireAllEvents() {
     setActiveCameraPresetButton(preset);
   });
 
-  // 5. Orthogonal Slice Scrubbers, Click Mode & Probe Depth
+  // 5. Orthogonal Slice Scrubbers, Click Mode, Probe Depth & Fly Along Corridor
   dom['click-mode-group']?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-mode]');
     if (!btn) return;
@@ -1674,38 +1946,73 @@ function wireAllEvents() {
   });
 
   dom['slider-slice-x']?.addEventListener('input', (e) => {
+    if (appState.isFlyingCorridor) stopCorridorFlight();
     appState.sliceMni = [Number(e.target.value), appState.sliceMni[1], appState.sliceMni[2]];
     if (dom['val-slice-x']) dom['val-slice-x'].textContent = formatSignedMm(appState.sliceMni[0], 0);
     syncRendererState();
   });
 
   dom['slider-slice-y']?.addEventListener('input', (e) => {
+    if (appState.isFlyingCorridor) stopCorridorFlight();
     appState.sliceMni = [appState.sliceMni[0], Number(e.target.value), appState.sliceMni[2]];
     if (dom['val-slice-y']) dom['val-slice-y'].textContent = formatSignedMm(appState.sliceMni[1], 0);
     syncRendererState();
   });
 
   dom['slider-slice-z']?.addEventListener('input', (e) => {
+    if (appState.isFlyingCorridor) stopCorridorFlight();
     appState.sliceMni = [appState.sliceMni[0], appState.sliceMni[1], Number(e.target.value)];
     if (dom['val-slice-z']) dom['val-slice-z'].textContent = formatSignedMm(appState.sliceMni[2], 0);
     syncRendererState();
   });
 
+  dom['btn-fly-corridor']?.addEventListener('click', () => {
+    toggleCorridorFlight();
+  });
+
   dom['slider-probe-depth']?.addEventListener('input', (e) => {
+    if (appState.isFlyingCorridor) stopCorridorFlight();
+    appState.probeDepthTouched = true;
     appState.probeDepthFraction = clamp(Number(e.target.value) / 100, 0, 1);
-    updateProbeDepthReadout();
+    syncSliceCrosshairToProbeDepth(appState.probeDepthFraction);
+    syncSliceAndProbeControlsUi();
     syncRendererState();
   });
 
-  // 6. Right Control Console Tabs
-  for (const name of ['planner', 'atlas', 'pearls', 'quiz']) {
+  dom['slider-probe-depth']?.addEventListener('dblclick', () => {
+    if (appState.isFlyingCorridor) stopCorridorFlight();
+    appState.probeDepthTouched = true;
+    appState.probeDepthFraction = 0.5;
+    syncSliceCrosshairToProbeDepth(0.5);
+    syncSliceAndProbeControlsUi();
+    syncRendererState();
+  });
+
+  // 6. Right Control Console Tabs (+ Keyboard Arrow Navigation)
+  const tabOrder = ['planner', 'atlas', 'pearls', 'quiz'];
+  for (const name of tabOrder) {
     dom[`tab-btn-${name}`]?.addEventListener('click', () => activateTab(name));
+    dom[`tab-btn-${name}`]?.addEventListener('keydown', (e) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+      e.preventDefault();
+      const idx = tabOrder.indexOf(name);
+      const nextIdx =
+        e.key === 'Home'
+          ? 0
+          : e.key === 'End'
+            ? tabOrder.length - 1
+            : (idx + (e.key === 'ArrowRight' ? 1 : -1) + tabOrder.length) % tabOrder.length;
+      const nextName = tabOrder[nextIdx];
+      activateTab(nextName);
+      dom[`tab-btn-${nextName}`]?.focus();
+    });
   }
 
   // 7. Tab 1 — Corridor Geometry, Entry/Target Precision Sliders & Optimizer
   dom['approach-mode-group']?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-approach]');
     if (!btn || !appState.corridor) return;
+    stopCorridorFlight();
     appState.corridor.approachMode = btn.dataset.approach === 'endonasal' ? 'endonasal' : 'transcortical';
     dismissOptimizedCorridor();
     syncCorridorControlsUi();
@@ -1715,6 +2022,15 @@ function wireAllEvents() {
   dom['slider-corridor-radius']?.addEventListener('input', (e) => {
     if (!appState.corridor) return;
     appState.corridor.radiusMm = clamp(Number(e.target.value), 3, 12);
+    dismissOptimizedCorridor();
+    syncCorridorControlsUi();
+    recomputeAndRender();
+  });
+
+  dom['slider-corridor-radius']?.addEventListener('dblclick', () => {
+    if (!appState.corridor) return;
+    const defaultRadius = getActiveCase()?.defaultCorridor?.radiusMm || 6;
+    appState.corridor.radiusMm = clamp(Number(defaultRadius), 3, 12);
     dismissOptimizedCorridor();
     syncCorridorControlsUi();
     recomputeAndRender();
@@ -1768,9 +2084,13 @@ function wireAllEvents() {
   dom['btn-reset-corridor']?.addEventListener('click', () => {
     const c = getActiveCase();
     if (!c) return;
+    stopCorridorFlight();
     appState.corridor = cloneCorridor(c.defaultCorridor);
+    appState.probeDepthFraction = 0.5;
+    appState.probeDepthTouched = false;
     dismissOptimizedCorridor();
     syncCorridorControlsUi();
+    syncSliceAndProbeControlsUi();
     recomputeAndRender();
     showToast('Restored default case surgical corridor.', 'info');
   });
@@ -1990,10 +2310,27 @@ function wireAllEvents() {
     dropzone.addEventListener('drop', (e) => {
       e.preventDefault();
       setDrag(false);
-      const file = e.dataTransfer?.files?.[0];
-      if (file) handleNiftiFile(file);
+      const files = e.dataTransfer?.files;
+      if (!files || files.length === 0) return;
+      if (files.length > 1) {
+        const names = Array.from(files).map((f) => f.name.toLowerCase());
+        if (names.some((n) => n.endsWith('.hdr')) && names.some((n) => n.endsWith('.img'))) {
+          renderNiftiError('Dual-file NIfTI/Analyze (.hdr + .img) pairs are not supported. Export a single-file .nii or .nii.gz binary mask.');
+          return;
+        }
+        showToast(`Multiple files dropped — loading first file (${files[0].name}).`, 'info');
+      }
+      handleNiftiFile(files[0]);
     });
   }
+
+  dom['nifti-status-card']?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-nifti-action="dismiss"]');
+    if (!btn || !dom['nifti-status-card']) return;
+    dom['nifti-status-card'].hidden = true;
+    dom['nifti-status-card'].classList.remove('is-error');
+    dom['nifti-status-card'].removeAttribute('role');
+  });
 
   // 12. Tab 3 — Case Brief Key-Hazard Chip Clicks
   dom['pearls-content']?.addEventListener('click', (e) => {
@@ -2037,13 +2374,66 @@ function wireAllEvents() {
     showToast('Quiz reset — starting from Question 1.', 'info');
   });
 
-  // 14. Global Escape Shortcut to Clear Selection Popover
+  // 14. 3D Canvas Keyboard Orbit/Zoom & Global Camera / Escape Shortcuts
+  dom['viewport-3d']?.addEventListener('keydown', (e) => {
+    if (!appState.renderer || e.ctrlKey || e.metaKey || e.altKey) return;
+    const cam = appState.renderer.getCamera();
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      appState.renderer.setCamera(cam.yaw - 0.09, cam.pitch, cam.zoom);
+      setActiveCameraPresetButton(null);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      appState.renderer.setCamera(cam.yaw + 0.09, cam.pitch, cam.zoom);
+      setActiveCameraPresetButton(null);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      appState.renderer.setCamera(cam.yaw, cam.pitch + 0.08, cam.zoom);
+      setActiveCameraPresetButton(null);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      appState.renderer.setCamera(cam.yaw, cam.pitch - 0.08, cam.zoom);
+      setActiveCameraPresetButton(null);
+    } else if (e.key === '+' || e.key === '=') {
+      e.preventDefault();
+      appState.renderer.setCamera(cam.yaw, cam.pitch, cam.zoom * 1.12);
+    } else if (e.key === '-' || e.key === '_') {
+      e.preventDefault();
+      appState.renderer.setCamera(cam.yaw, cam.pitch, cam.zoom / 1.12);
+    } else if (e.key === '0' || e.key === 'r' || e.key === 'R') {
+      e.preventDefault();
+      appState.renderer.setCameraPreset('oblique');
+      setActiveCameraPresetButton('oblique');
+    }
+  });
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && appState.selectedHazardId) {
-      appState.selectedHazardId = null;
-      renderAnatomyInspector(null);
-      renderHazardTable();
-      syncRendererState();
+    if (e.key === 'Escape') {
+      if (appState.legendOpen) {
+        setLegendOpen(false);
+      }
+      if (appState.selectedHazardId) {
+        appState.selectedHazardId = null;
+        renderAnatomyInspector(null);
+        renderHazardTable();
+        syncRendererState();
+      }
+      return;
+    }
+
+    if (e.ctrlKey || e.metaKey || e.altKey || isEditableTarget(e.target)) return;
+
+    if (e.key === '?') {
+      e.preventDefault();
+      setLegendOpen(!appState.legendOpen);
+      return;
+    }
+
+    const preset = CAMERA_SHORTCUT_MAP[e.key];
+    if (preset && appState.renderer) {
+      e.preventDefault();
+      appState.renderer.setCameraPreset(preset);
+      setActiveCameraPresetButton(preset);
     }
   });
 }
@@ -2091,7 +2481,15 @@ async function bootstrap() {
     canvasProbe: dom['viewport-probe'],
     onSliceClick: handleSliceClick,
     onStructureHover: handleStructureHover,
-    onCameraChange: null,
+    onStructureClick: (hit) => {
+      if (hit?.id) selectAndInspectHazard(hit.id);
+    },
+    onCameraChange: (camInfo) => {
+      if (camInfo?.userInteraction) setActiveCameraPresetButton(null);
+    },
+    onPresetSelect: (preset) => {
+      setActiveCameraPresetButton(preset);
+    },
   });
   appState.renderer.setAtlasData(appState.atlasData, appState.densifiedTracts);
 

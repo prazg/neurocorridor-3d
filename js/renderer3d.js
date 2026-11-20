@@ -675,7 +675,9 @@ export class NeuroCorridorRenderer {
       probeCanvas = null,
       onSliceClick = null,
       onStructureHover = null,
+      onStructureClick = null,
       onCameraChange = null,
+      onPresetSelect = null,
     } = config;
 
     this.canvases = {
@@ -705,7 +707,9 @@ export class NeuroCorridorRenderer {
     this.callbacks = {
       onSliceClick: typeof onSliceClick === 'function' ? onSliceClick : null,
       onStructureHover: typeof onStructureHover === 'function' ? onStructureHover : null,
+      onStructureClick: typeof onStructureClick === 'function' ? onStructureClick : null,
       onCameraChange: typeof onCameraChange === 'function' ? onCameraChange : null,
+      onPresetSelect: typeof onPresetSelect === 'function' ? onPresetSelect : null,
     };
 
     this.atlasData = null;
@@ -761,6 +765,7 @@ export class NeuroCorridorRenderer {
     this._pointers = new Map();
     this._dragMode = null; // 'orbit' | 'pan' | 'pinch'
     this._lastPointerPos = null;
+    this._pointerDownOrigin = null;
     this._lastPinchDist = 0;
     this._lastPinchMid = null;
     this._activeSliceDrag = null;
@@ -1016,13 +1021,13 @@ export class NeuroCorridorRenderer {
     const canvas = this.canvases[key];
     if (!canvas) return false;
     const rect = canvas.getBoundingClientRect();
-    const w = Math.floor(rect.width);
-    const h = Math.floor(rect.height);
+    const w = Math.round(rect.width);
+    const h = Math.round(rect.height);
     if (w <= 2 || h <= 2) return false;
 
-    const dpr = clamp(window.devicePixelRatio || 1, 1, 2);
-    const targetW = Math.round(w * dpr);
-    const targetH = Math.round(h * dpr);
+    const dpr = clamp(window.devicePixelRatio || 1, 1, 2.5);
+    const targetW = Math.max(1, Math.round(w * dpr));
+    const targetH = Math.max(1, Math.round(h * dpr));
     const prev = this.sizes[key];
 
     if (canvas.width !== targetW || canvas.height !== targetH || prev.w !== w || prev.h !== h || prev.dpr !== dpr) {
@@ -1106,9 +1111,12 @@ export class NeuroCorridorRenderer {
     }
   }
 
-  _emitCameraChange() {
+  _emitCameraChange(meta = null) {
     if (this.callbacks.onCameraChange) {
-      this.callbacks.onCameraChange(this.getCamera());
+      this.callbacks.onCameraChange({
+        ...this.getCamera(),
+        ...(meta && typeof meta === 'object' ? meta : {}),
+      });
     }
   }
 
@@ -1156,14 +1164,36 @@ export class NeuroCorridorRenderer {
       this._listen(c3d, 'pointermove', (e) => this._on3DPointerMove(e));
       this._listen(c3d, 'pointerup', (e) => this._on3DPointerUp(e));
       this._listen(c3d, 'pointercancel', (e) => this._on3DPointerUp(e));
+      this._listen(c3d, 'lostpointercapture', (e) => this._on3DPointerLostCapture(e));
       this._listen(c3d, 'pointerleave', () => this._on3DPointerLeave());
       this._listen(c3d, 'wheel', (e) => this._on3DWheel(e), { passive: false });
-      this._listen(c3d, 'dblclick', () => this.setCameraPreset('oblique'));
+      this._listen(c3d, 'dblclick', () => {
+        this.setCameraPreset('oblique');
+        if (this.callbacks.onPresetSelect) this.callbacks.onPresetSelect('oblique');
+      });
       this._listen(c3d, 'contextmenu', (e) => e.preventDefault());
     }
 
     for (const plane of ['axial', 'coronal', 'sagittal']) {
       this._bindSliceEvents(plane);
+    }
+
+    if (typeof window !== 'undefined') {
+      this._listen(window, 'resize', () => this.resize());
+      this._listen(window, 'blur', () => this._resetPointerStates());
+    }
+  }
+
+  _resetPointerStates() {
+    this._pointers.clear();
+    this._dragMode = null;
+    this._lastPointerPos = null;
+    this._pointerDownOrigin = null;
+    this._lastPinchDist = 0;
+    this._lastPinchMid = null;
+    this._activeSliceDrag = null;
+    if (this.canvases.view3d) {
+      this.canvases.view3d.style.cursor = 'grab';
     }
   }
 
@@ -1182,11 +1212,18 @@ export class NeuroCorridorRenderer {
     if (this._pointers.size === 2) {
       const pts = Array.from(this._pointers.values());
       this._dragMode = 'pinch';
+      this._pointerDownOrigin = null;
       this._lastPinchDist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
       this._lastPinchMid = { x: (pts[0].x + pts[1].x) * 0.5, y: (pts[0].y + pts[1].y) * 0.5 };
     } else if (this._pointers.size === 1) {
       this._dragMode = e.button === 1 || e.button === 2 || e.shiftKey ? 'pan' : 'orbit';
       this._lastPointerPos = { x: e.clientX, y: e.clientY };
+      this._pointerDownOrigin = {
+        pointerId: e.pointerId,
+        button: e.button,
+        x: e.clientX,
+        y: e.clientY,
+      };
       c3d.style.cursor = 'grabbing';
     }
 
@@ -1204,44 +1241,50 @@ export class NeuroCorridorRenderer {
     if (!c3d) return;
 
     if (this._pointers.has(e.pointerId)) {
-      this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (e.pointerType === 'mouse' && e.buttons === 0) {
+        this._on3DPointerLostCapture(e);
+      } else {
+        this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-      if (this._dragMode === 'pinch' && this._pointers.size === 2) {
-        const pts = Array.from(this._pointers.values());
-        const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-        const mid = { x: (pts[0].x + pts[1].x) * 0.5, y: (pts[0].y + pts[1].y) * 0.5 };
+        if (this._dragMode === 'pinch' && this._pointers.size === 2) {
+          const pts = Array.from(this._pointers.values());
+          const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+          const mid = { x: (pts[0].x + pts[1].x) * 0.5, y: (pts[0].y + pts[1].y) * 0.5 };
 
-        if (this._lastPinchDist > 4 && dist > 4) {
-          const factor = dist / this._lastPinchDist;
-          this.camera.zoom = clamp(this.camera.zoom * factor, ZOOM_MIN, ZOOM_MAX);
-        }
-        if (this._lastPinchMid) {
-          this._applyScreenPan(mid.x - this._lastPinchMid.x, mid.y - this._lastPinchMid.y);
-        }
-        this._lastPinchDist = dist;
-        this._lastPinchMid = mid;
-        this._dirty.view3d = true;
-        this._emitCameraChange();
-        this._scheduleFrame();
-        return;
-      }
-
-      if (this._lastPointerPos && this._pointers.size === 1) {
-        const dx = e.clientX - this._lastPointerPos.x;
-        const dy = e.clientY - this._lastPointerPos.y;
-        this._lastPointerPos = { x: e.clientX, y: e.clientY };
-
-        if (this._dragMode === 'pan') {
-          this._applyScreenPan(dx, dy);
-        } else {
-          this.camera.yaw += dx * 0.0075;
-          this.camera.pitch = clamp(this.camera.pitch + dy * 0.0075, PITCH_MIN, PITCH_MAX);
+          if (this._lastPinchDist > 4 && dist > 4) {
+            const factor = dist / this._lastPinchDist;
+            this.camera.zoom = clamp(this.camera.zoom * factor, ZOOM_MIN, ZOOM_MAX);
+          }
+          if (this._lastPinchMid) {
+            this._applyScreenPan(mid.x - this._lastPinchMid.x, mid.y - this._lastPinchMid.y);
+          }
+          this._lastPinchDist = dist;
+          this._lastPinchMid = mid;
+          this._dirty.view3d = true;
+          this._emitCameraChange({ userInteraction: true });
+          this._scheduleFrame();
+          return;
         }
 
-        this._dirty.view3d = true;
-        this._emitCameraChange();
-        this._scheduleFrame();
-        return;
+        if (this._lastPointerPos && this._pointers.size === 1) {
+          const dx = e.clientX - this._lastPointerPos.x;
+          const dy = e.clientY - this._lastPointerPos.y;
+          this._lastPointerPos = { x: e.clientX, y: e.clientY };
+
+          if (this._dragMode === 'pan') {
+            this._applyScreenPan(dx, dy);
+          } else {
+            this.camera.yaw += dx * 0.0075;
+            this.camera.pitch = clamp(this.camera.pitch + dy * 0.0075, PITCH_MIN, PITCH_MAX);
+          }
+
+          if (Math.hypot(dx, dy) > 0.5) {
+            this._dirty.view3d = true;
+            this._emitCameraChange({ userInteraction: true });
+            this._scheduleFrame();
+          }
+          return;
+        }
       }
     }
 
@@ -1287,10 +1330,45 @@ export class NeuroCorridorRenderer {
   }
 
   _on3DPointerUp(e) {
+    const c3d = this.canvases.view3d;
+    if (c3d) {
+      try {
+        if (c3d.hasPointerCapture?.(e.pointerId)) {
+          c3d.releasePointerCapture(e.pointerId);
+        }
+      } catch (_) {
+        // Ignore
+      }
+    }
+
+    const downOrigin = this._pointerDownOrigin;
+    this._pointerDownOrigin = null;
+
+    if (
+      e.type === 'pointerup' &&
+      c3d &&
+      downOrigin &&
+      downOrigin.pointerId === e.pointerId &&
+      downOrigin.button === 0 &&
+      Math.hypot(e.clientX - downOrigin.x, e.clientY - downOrigin.y) < 4.5 &&
+      this.callbacks.onStructureClick
+    ) {
+      const rect = c3d.getBoundingClientRect();
+      const hit = this._hitTest3D(e.clientX - rect.left, e.clientY - rect.top);
+      if (hit) {
+        this.callbacks.onStructureClick(hit);
+      }
+    }
+
+    this._on3DPointerLostCapture(e);
+  }
+
+  _on3DPointerLostCapture(e) {
     this._pointers.delete(e.pointerId);
     if (this._pointers.size === 0) {
       this._dragMode = null;
       this._lastPointerPos = null;
+      this._pointerDownOrigin = null;
       this._lastPinchDist = 0;
       this._lastPinchMid = null;
       if (this.canvases.view3d) this.canvases.view3d.style.cursor = 'grab';
@@ -1400,16 +1478,6 @@ export class NeuroCorridorRenderer {
       emitFromEvent(e);
     });
 
-    this._listen(canvas, 'pointermove', (e) => {
-      if (
-        this._activeSliceDrag &&
-        this._activeSliceDrag.plane === plane &&
-        this._activeSliceDrag.pointerId === e.pointerId
-      ) {
-        emitFromEvent(e);
-      }
-    });
-
     const endDrag = (e) => {
       if (
         this._activeSliceDrag &&
@@ -1418,9 +1486,32 @@ export class NeuroCorridorRenderer {
       ) {
         this._activeSliceDrag = null;
       }
+      try {
+        if (canvas.hasPointerCapture?.(e.pointerId)) {
+          canvas.releasePointerCapture(e.pointerId);
+        }
+      } catch (_) {
+        // Ignore
+      }
     };
+
+    this._listen(canvas, 'pointermove', (e) => {
+      if (
+        this._activeSliceDrag &&
+        this._activeSliceDrag.plane === plane &&
+        this._activeSliceDrag.pointerId === e.pointerId
+      ) {
+        if (e.pointerType === 'mouse' && e.buttons === 0) {
+          endDrag(e);
+          return;
+        }
+        emitFromEvent(e);
+      }
+    });
+
     this._listen(canvas, 'pointerup', endDrag);
     this._listen(canvas, 'pointercancel', endDrag);
+    this._listen(canvas, 'lostpointercapture', endDrag);
   }
 
   _screenToSliceMni(plane, sx, sy, tr) {
@@ -1457,7 +1548,7 @@ export class NeuroCorridorRenderer {
     bgGrad.addColorStop(0.6, '#0a101b');
     bgGrad.addColorStop(1, '#060a10');
     ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0, 0, w + 1, h + 1);
 
     // Subtle background stereotactic grid ring cue
     this._draw3DBackdropReticule(ctx, w, h);
@@ -2121,9 +2212,31 @@ export class NeuroCorridorRenderer {
       pushCorridorRing(tFrac, radiusMm + 0.35, brightenHex(riskColor, 0.3, 0.52), 1.0);
     }
 
-    // Active Probe's-Eye Depth Plane Ring in 3D (links 3D viewport to Probe slider!)
+    // Active Probe's-Eye Depth Plane Ring & Luminous Probe Tip in 3D (links 3D viewport to Probe scrubber / flight!)
     const probeT = clamp(this.state.probeDepthFraction, 0, 1);
-    pushCorridorRing(probeT, radiusMm + 1.4, 'rgba(56, 189, 248, 0.92)', 1.8);
+    pushCorridorRing(probeT, radiusMm + 1.4, 'rgba(56, 189, 248, 0.94)', 1.9);
+    const probeWorld = v3Add(entry, v3Scale(dir, probeT * lengthMm));
+    const probeProj = projectPoint(probeWorld, cam);
+    if (probeProj) {
+      painter.push({
+        depth: probeProj.z - 1.2,
+        draw(ctx) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(probeProj.sx, probeProj.sy, 4.6, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(probeProj.sx, probeProj.sy, 2.3, 0, Math.PI * 2);
+          ctx.fillStyle = '#e0f2fe';
+          ctx.fill();
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          ctx.restore();
+        },
+      });
+    }
 
     // Target Ring & 3D Target Bullseye Crosshair
     pushCorridorRing(1, radiusMm, hexToRgba(riskColor, 0.78), 1.6);
@@ -2565,7 +2678,7 @@ export class NeuroCorridorRenderer {
 
     // Dark radiological background
     ctx.fillStyle = '#080c13';
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0, 0, w + 1, h + 1);
 
     // Compute uniform isotropic mm -> px transform with clean padding for labels & header
     const padTop = 24;
@@ -2986,8 +3099,22 @@ export class NeuroCorridorRenderer {
       ctx.setLineDash([]);
     }
 
-    // 4. Entry & Target markers
+    // 4. Entry, Advancing Probe Tip & Target markers
     if (!isGhost) {
+      // Advancing probe depth marker along projected trajectory
+      const probeT = clamp(this.state.probeDepthFraction, 0, 1);
+      const pProbe = {
+        x: pA.x + (pB.x - pA.x) * probeT,
+        y: pA.y + (pB.y - pA.y) * probeT,
+      };
+      ctx.beginPath();
+      ctx.arc(pProbe.x, pProbe.y, 3.1, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.92)';
+      ctx.fill();
+      ctx.strokeStyle = '#090d14';
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
+
       // Entry hollow ring
       ctx.beginPath();
       ctx.arc(pA.x, pA.y, 4, 0, Math.PI * 2);
@@ -3054,11 +3181,11 @@ export class NeuroCorridorRenderer {
 
     // Dark surgical instrument housing background
     ctx.fillStyle = '#080c13';
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0, 0, w + 1, h + 1);
 
     const cx = w * 0.5;
-    const cy = h * 0.5 + 4;
-    const scopeRadiusPx = Math.max(24, Math.min(w - 44, h - 54) * 0.5);
+    const cy = h * 0.5 + 3;
+    const scopeRadiusPx = Math.max(22, Math.min(w - 42, h - 58) * 0.5);
 
     // Fetch live ProbeCrossSectionData from geometryEngine analysis
     let data = null;
@@ -3291,12 +3418,21 @@ export class NeuroCorridorRenderer {
 
     ctx.restore(); // end scope clip
 
-    // Scope bezel ring
+    // Scope bezel ring + radial advancement progress arc
     ctx.beginPath();
     ctx.arc(cx, cy, scopeRadiusPx, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
     ctx.lineWidth = 1.6;
     ctx.stroke();
+
+    const advFrac = clamp(data.depthFraction ?? this.state.probeDepthFraction, 0, 1);
+    if (advFrac > 0.005) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, scopeRadiusPx + 2.2, -Math.PI * 0.5, -Math.PI * 0.5 + advFrac * Math.PI * 2);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.72)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
 
     // Rotating anatomical compass glyphs (R/L/A/P/S/I) around scope perimeter
     const frame = data.frame;
@@ -3312,17 +3448,26 @@ export class NeuroCorridorRenderer {
       ctx.fillText(frame.vNegativeLabel || 'I', cx, cy + scopeRadiusPx + pad);
     }
 
-    // Top-left depth HUD readout
-    const pct = Math.round(clamp(data.depthFraction ?? this.state.probeDepthFraction, 0, 1) * 100);
+    // Top-left depth HUD readout (compact on narrow viewports so top compass never collides)
+    const pct = Math.round(advFrac * 100);
     const depthMm = Number.isFinite(data.depthMm) ? data.depthMm.toFixed(1) : '0.0';
-    ctx.font = `700 10px ${FONT_MONO}`;
+    const compactProbeHud = w < 220;
+    ctx.font = `700 ${compactProbeHud ? '9.5px' : '10px'} ${FONT_MONO}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillText('PROBE', 8, 6);
-    const probeTitleW = ctx.measureText('PROBE').width;
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillText(` ${depthMm}mm (${pct}%)`, 8 + probeTitleW, 6);
+    if (compactProbeHud) {
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(`${pct}%`, 7, 6);
+      const pctW = ctx.measureText(`${pct}%`).width;
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText(` ${depthMm}mm`, 7 + pctW, 6);
+    } else {
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText('PROBE', 8, 6);
+      const probeTitleW = ctx.measureText('PROBE').width;
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText(` ${depthMm}mm (${pct}%)`, 8 + probeTitleW, 6);
+    }
 
     // Top-right closest-at-slice pill
     const closest = data.closestAtSlice;
@@ -3331,10 +3476,10 @@ export class NeuroCorridorRenderer {
       const cTier = closest.riskTier || getRiskTier(closest.clearanceMm);
       const cColor = RISK_COLORS[cTier] || '#94a3b8';
       ctx.fillStyle = cColor;
-      ctx.fillText(`${closest.shortName || closest.name} ${closest.clearanceMm.toFixed(1)}mm`, w - 8, 6);
+      ctx.fillText(`${closest.shortName || closest.name} ${closest.clearanceMm.toFixed(1)}mm`, w - 7, 6);
     } else {
       ctx.fillStyle = RISK_COLORS.safe;
-      ctx.fillText(`CLEAR`, w - 8, 6);
+      ctx.fillText(`CLEAR`, w - 7, 6);
     }
 
     // Bottom MNI plane origin readout
