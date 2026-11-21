@@ -2442,6 +2442,215 @@ function wireAllEvents() {
 // Application Bootstrap
 // ============================================================================
 
+// ============================================================================
+// Resizable 3D Stage: Splitter, Expand-3D Toggle & Fullscreen
+// ============================================================================
+
+const LAYOUT_STORAGE_KEY = 'neurocorridor3d.layout.v1';
+const ORTHO_GRID_MIN_PX = 130;
+const ORTHO_GRID_MAX_PX = 560;
+const HERO_MIN_PX = 260;
+const SPLITTER_KEY_STEP_PX = 24;
+
+function readLayoutPrefs() {
+  try {
+    const raw = window.localStorage?.getItem(LAYOUT_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeLayoutPrefs(patch) {
+  try {
+    const next = { ...readLayoutPrefs(), ...patch };
+    window.localStorage?.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    /* storage unavailable (private mode / sandboxed iframe) — layout still works for this visit */
+  }
+}
+
+function requestViewportRepaint() {
+  window.requestAnimationFrame(() => appState.renderer?.resize());
+}
+
+function wireViewportLayoutControls() {
+  const stage = document.querySelector('.viz-stage');
+  const hero = document.querySelector('.viewport-hero-card');
+  const orthoGrid = document.getElementById('ortho-grid');
+  const orthoSection = document.querySelector('.ortho-section');
+  const splitter = document.getElementById('stage-splitter');
+  const btnExpand = document.getElementById('btn-expand-3d');
+  const btnSlices = document.getElementById('btn-toggle-slices');
+  const btnFullscreen = document.getElementById('btn-fullscreen-3d');
+  const workspace = document.querySelector('.console-workspace');
+  if (!stage || !hero || !orthoGrid) return;
+
+  const maxOrthoHeight = () => {
+    const toolbar = orthoSection?.querySelector('.ortho-toolbar');
+    const chrome = (toolbar?.offsetHeight || 0) + (splitter?.offsetHeight || 0) + 6;
+    return clamp(stage.clientHeight - HERO_MIN_PX - chrome, ORTHO_GRID_MIN_PX, ORTHO_GRID_MAX_PX);
+  };
+
+  const syncSplitterAria = () => {
+    if (!splitter) return;
+    const h = hero.offsetHeight;
+    const o = orthoGrid.offsetHeight;
+    const pct = h + o > 0 ? Math.round((h / (h + o)) * 100) : 0;
+    splitter.setAttribute('aria-valuemin', '0');
+    splitter.setAttribute('aria-valuemax', '100');
+    splitter.setAttribute('aria-valuenow', String(pct));
+    splitter.setAttribute('aria-valuetext', `3D viewport ${pct}% of stage height`);
+  };
+
+  const setOrthoHeight = (px, { persist = true } = {}) => {
+    if (px === null) {
+      stage.style.removeProperty('--ortho-grid-h');
+      if (persist) writeLayoutPrefs({ orthoHeight: null });
+    } else {
+      const next = Math.round(clamp(px, ORTHO_GRID_MIN_PX, maxOrthoHeight()));
+      stage.style.setProperty('--ortho-grid-h', `${next}px`);
+      if (persist) writeLayoutPrefs({ orthoHeight: next });
+    }
+    syncSplitterAria();
+    requestViewportRepaint();
+  };
+
+  const setExpanded = (expanded, { persist = true } = {}) => {
+    stage.classList.toggle('is-3d-expanded', expanded);
+    if (btnExpand) {
+      btnExpand.setAttribute('aria-pressed', String(expanded));
+      const label = btnExpand.querySelector('.seg-btn-text');
+      if (label) label.textContent = expanded ? 'Restore Slices' : 'Expand 3D';
+      btnExpand.title = expanded
+        ? 'Restore the slice strip below the 3D viewport (Shortcut: F)'
+        : 'Expand the 3D viewport by collapsing the slice strip (Shortcut: F)';
+    }
+    if (btnSlices) {
+      btnSlices.setAttribute('aria-expanded', String(!expanded));
+      const text = btnSlices.querySelector('.ortho-collapse-text');
+      if (text) text.textContent = expanded ? 'Show slices' : 'Hide slices';
+    }
+    if (persist) writeLayoutPrefs({ expanded });
+    syncSplitterAria();
+    requestViewportRepaint();
+  };
+
+  const toggleExpanded = () => setExpanded(!stage.classList.contains('is-3d-expanded'));
+
+  // Restore saved layout
+  const prefs = readLayoutPrefs();
+  if (Number.isFinite(prefs.orthoHeight)) setOrthoHeight(prefs.orthoHeight, { persist: false });
+  setExpanded(Boolean(prefs.expanded), { persist: false });
+
+  btnExpand?.addEventListener('click', toggleExpanded);
+  btnSlices?.addEventListener('click', toggleExpanded);
+
+  // Splitter: pointer drag, keyboard nudge, double-click reset
+  if (splitter) {
+    let dragStartY = 0;
+    let dragStartHeight = 0;
+    let dragging = false;
+
+    splitter.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      dragStartY = e.clientY;
+      dragStartHeight = orthoGrid.getBoundingClientRect().height;
+      splitter.setPointerCapture?.(e.pointerId);
+      splitter.classList.add('is-dragging');
+      document.body.classList.add('is-resizing-stage');
+      e.preventDefault();
+    });
+
+    splitter.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      // Dragging up grows the slice strip; dragging down grows the 3D viewport
+      setOrthoHeight(dragStartHeight - (e.clientY - dragStartY), { persist: false });
+    });
+
+    const endDrag = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      splitter.releasePointerCapture?.(e.pointerId);
+      splitter.classList.remove('is-dragging');
+      document.body.classList.remove('is-resizing-stage');
+      writeLayoutPrefs({ orthoHeight: Math.round(orthoGrid.getBoundingClientRect().height) });
+    };
+    splitter.addEventListener('pointerup', endDrag);
+    splitter.addEventListener('pointercancel', endDrag);
+
+    splitter.addEventListener('dblclick', () => setOrthoHeight(null));
+
+    splitter.addEventListener('keydown', (e) => {
+      const current = orthoGrid.getBoundingClientRect().height;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setOrthoHeight(current - SPLITTER_KEY_STEP_PX);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setOrthoHeight(current + SPLITTER_KEY_STEP_PX);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        setOrthoHeight(ORTHO_GRID_MIN_PX);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        setOrthoHeight(ORTHO_GRID_MAX_PX);
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setOrthoHeight(null);
+      }
+    });
+  }
+
+  // Keep a saved splitter height valid when the window shrinks
+  window.addEventListener('resize', () => {
+    const saved = parseFloat(stage.style.getPropertyValue('--ortho-grid-h'));
+    if (Number.isFinite(saved) && saved > maxOrthoHeight()) {
+      setOrthoHeight(maxOrthoHeight(), { persist: false });
+    } else {
+      syncSplitterAria();
+    }
+  });
+
+  // Fullscreen: 3D stage + corridor planning panel together
+  const fullscreenSupported = Boolean(workspace?.requestFullscreen && document.exitFullscreen);
+  if (btnFullscreen) {
+    if (!fullscreenSupported) {
+      btnFullscreen.hidden = true;
+    } else {
+      btnFullscreen.addEventListener('click', () => {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        } else {
+          workspace.requestFullscreen().catch(() => {
+            showToast('Fullscreen is not available in this browser context.', 'info');
+          });
+        }
+      });
+      document.addEventListener('fullscreenchange', () => {
+        const active = document.fullscreenElement === workspace;
+        btnFullscreen.setAttribute('aria-pressed', String(active));
+        const label = btnFullscreen.querySelector('.seg-btn-text');
+        if (label) label.textContent = active ? 'Exit Fullscreen' : 'Fullscreen';
+        requestViewportRepaint();
+      });
+    }
+  }
+
+  // Global shortcut: F toggles Expand 3D
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || isEditableTarget(e.target)) return;
+    if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault();
+      toggleExpanded();
+    }
+  });
+
+  syncSplitterAria();
+}
+
 async function bootstrap() {
   cacheDomElements();
 
@@ -2497,6 +2706,7 @@ async function bootstrap() {
   renderAtlasToggles();
   renderQuizUi();
   wireAllEvents();
+  wireViewportLayoutControls();
 
   if (appState.cases.length > 0) {
     loadCase(appState.cases[0].id, { flyCamera: false });
