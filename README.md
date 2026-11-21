@@ -47,12 +47,6 @@ Verify all atlas/case schemas, bilateral symmetry, clinical proximity invariants
 python tests/verify_geometry.py
 ```
 
-### Static GitHub Pages Deployment
-
-The included CI/CD workflow (`.github/workflows/pages.yml`) runs `python tests/verify_geometry.py` on every push and pull request, and automatically deploys the static site to **GitHub Pages** once the verification gate passes on `main`.
-
----
-
 ## MNI-152 Stereotactic Coordinate System (RAS+)
 
 All atlas structures, white-matter fiber streamlines, tumor ellipsoids, surgical trajectories, NIfTI overlays, and tri-planar slices share a unified **MNI-152 RAS+ coordinate space in millimeters (`mm`)**:
@@ -210,7 +204,7 @@ If you use **NeuroCorridor-3D** in teaching, neuroanatomy workshops, or academic
 ```bibtex
 @software{neurocorridor_3d_2026,
   title   = {NeuroCorridor-3D: Zero-Build Interactive 3D Stereotactic Neuroanatomy, Fiber Tractography and Surgical Corridor Planning Sandbox},
-  author  = {{NeuroCorridor-3D Contributors}},
+  author  = {{Prajwal Ghimire}},
   year    = {2026},
   version = {1.0.0},
   license = {MIT},
