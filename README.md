@@ -32,7 +32,7 @@
 Because browsers restrict ES module `fetch()` requests over the `file://` protocol, serve the repository from any local static HTTP server (Python's built-in module requires zero installation):
 
 ```bash
-git clone https://github.com/neurocorridor-3d/neurocorridor-3d.git
+git clone https://github.com/prazg/neurocorridor-3d.git
 cd neurocorridor-3d
 python -m http.server 8000
 ```
