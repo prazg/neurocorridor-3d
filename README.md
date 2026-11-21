@@ -208,7 +208,7 @@ If you use **NeuroCorridor-3D** in teaching, neuroanatomy workshops, or academic
   year    = {2026},
   version = {1.0.0},
   license = {MIT},
-  url     = {https://github.com/neurocorridor-3d/neurocorridor-3d}
+  url     = {https://github.com/prazg/neurocorridor-3d}
 }
 ```
 
